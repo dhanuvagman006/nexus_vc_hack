@@ -156,18 +156,20 @@ class HomeDashboard extends StatelessWidget {
                                       color: Colors.orange),
                                 ),
                                 TextSpan(
-                                  text: smsQ.isOnline
+                                  text: smsQ.isGsmAvailable
                                       ? 'sending now...'
-                                      : 'queued · waiting for internet',
+                                      : 'queued · waiting for GSM signal',
                                 ),
                               ],
                             ),
                           ),
                         ),
                         Icon(
-                          smsQ.isOnline ? Icons.wifi : Icons.wifi_off,
+                          smsQ.isGsmAvailable
+                              ? Icons.signal_cellular_alt
+                              : Icons.signal_cellular_off,
                           size: 16,
-                          color: smsQ.isOnline ? Colors.green : Colors.grey,
+                          color: smsQ.isGsmAvailable ? Colors.green : Colors.grey,
                         ),
                       ],
                     ),

@@ -37,38 +37,46 @@ class SmsQueueService extends ChangeNotifier {
 
   final List<PendingSms> _queue = [];
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-  bool _isOnline = false;
+  bool _isOnline = false;      // internet (data/wifi) — for UI indicator
+  bool _isGsmAvailable = false; // cellular radio on — for SMS sending
   bool _isFlushing = false;
 
-  /// Whether the device currently has internet access.
+  /// Whether the device currently has internet access (for UI only).
   bool get isOnline => _isOnline;
+
+  /// Whether GSM is available to send SMS.
+  bool get isGsmAvailable => _isGsmAvailable;
 
   // ── Initialization ────────────────────────────────────────────────────────
 
   Future<void> init() async {
     await _loadQueue();
 
-    // Seed current connectivity state
+    // Seed current state
     final results = await Connectivity().checkConnectivity();
     _isOnline = _hasInternet(results);
+    _isGsmAvailable = _hasGsm(results);
 
     // Listen for connectivity changes
     _connectivitySub = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> results) async {
-      final wasOnline = _isOnline;
+      final wasGsm = _isGsmAvailable;
       _isOnline = _hasInternet(results);
-      debugPrint('[SmsQueue] Connectivity changed → online=$_isOnline');
-      notifyListeners(); // update UI connectivity badge
+      _isGsmAvailable = _hasGsm(results);
 
-      if (!wasOnline && _isOnline) {
-        // Just came back online — flush the queue
+      debugPrint('[SmsQueue] Connectivity → online=$_isOnline  gsm=$_isGsmAvailable');
+      notifyListeners(); // update UI
+
+      // Flush as soon as GSM radio is detected — SMS doesn’t need data
+      if (!wasGsm && _isGsmAvailable) {
+        debugPrint('[SmsQueue] GSM detected — flushing queue');
         await flushQueue();
       }
     });
 
-    // Flush immediately if already online and queue has items
-    if (_isOnline && _queue.isNotEmpty) {
+    // Flush immediately if GSM already available at startup
+    if (_isGsmAvailable && _queue.isNotEmpty) {
       await flushQueue();
     }
   }
@@ -109,6 +117,11 @@ class SmsQueueService extends ChangeNotifier {
           r == ConnectivityResult.mobile ||
           r == ConnectivityResult.wifi ||
           r == ConnectivityResult.ethernet);
+
+  /// True when the cellular radio is on (airplane mode is off).
+  /// SMS can be sent over GSM even without mobile DATA.
+  bool _hasGsm(List<ConnectivityResult> results) =>
+      results.contains(ConnectivityResult.mobile);
 
   /// Drain the queue, sending every pending SMS.
   Future<void> flushQueue() async {
