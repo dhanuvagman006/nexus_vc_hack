@@ -37,14 +37,15 @@ class SmsQueueService extends ChangeNotifier {
 
   final List<PendingSms> _queue = [];
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
-  bool _isOnline = false;      // internet (data/wifi) — for UI indicator
-  bool _isGsmAvailable = false; // cellular radio on — for SMS sending
+  Timer? _retryTimer;
+  bool _isOnline = false;       // internet (data/wifi) — for UI indicator
+  bool _isGsmAvailable = false; // any non-airplane connectivity
   bool _isFlushing = false;
 
   /// Whether the device currently has internet access (for UI only).
   bool get isOnline => _isOnline;
 
-  /// Whether GSM is available to send SMS.
+  /// Whether any radio signal is detected (GSM / WiFi).
   bool get isGsmAvailable => _isGsmAvailable;
 
   // ── Initialization ────────────────────────────────────────────────────────
@@ -55,27 +56,36 @@ class SmsQueueService extends ChangeNotifier {
     // Seed current state
     final results = await Connectivity().checkConnectivity();
     _isOnline = _hasInternet(results);
-    _isGsmAvailable = _hasGsm(results);
+    _isGsmAvailable = _hasAnySignal(results);
 
     // Listen for connectivity changes
     _connectivitySub = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> results) async {
-      final wasGsm = _isGsmAvailable;
+      final wasSignal = _isGsmAvailable;
       _isOnline = _hasInternet(results);
-      _isGsmAvailable = _hasGsm(results);
+      _isGsmAvailable = _hasAnySignal(results);
 
-      debugPrint('[SmsQueue] Connectivity → online=$_isOnline  gsm=$_isGsmAvailable');
-      notifyListeners(); // update UI
+      debugPrint('[SmsQueue] Connectivity → online=$_isOnline  signal=$_isGsmAvailable');
+      notifyListeners();
 
-      // Flush as soon as GSM radio is detected — SMS doesn’t need data
-      if (!wasGsm && _isGsmAvailable) {
-        debugPrint('[SmsQueue] GSM detected — flushing queue');
+      // Flush on any transition from no-signal to signal
+      if (!wasSignal && _isGsmAvailable) {
+        debugPrint('[SmsQueue] Signal detected — flushing queue');
         await flushQueue();
       }
     });
 
-    // Flush immediately if GSM already available at startup
+    // Periodic retry every 30 s — handles the case where GSM is available
+    // but connectivity_plus can’t detect it (data off, radio on)
+    _retryTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      if (_queue.isNotEmpty) {
+        debugPrint('[SmsQueue] Periodic retry — attempting ${_queue.length} SMS(es)');
+        await flushQueue();
+      }
+    });
+
+    // Flush immediately if signal already available at startup
     if (_isGsmAvailable && _queue.isNotEmpty) {
       await flushQueue();
     }
@@ -83,6 +93,7 @@ class SmsQueueService extends ChangeNotifier {
 
   void dispose() {
     _connectivitySub?.cancel();
+    _retryTimer?.cancel();
   }
 
   // ── Public API ────────────────────────────────────────────────────────────
@@ -118,10 +129,12 @@ class SmsQueueService extends ChangeNotifier {
           r == ConnectivityResult.wifi ||
           r == ConnectivityResult.ethernet);
 
-  /// True when the cellular radio is on (airplane mode is off).
-  /// SMS can be sent over GSM even without mobile DATA.
-  bool _hasGsm(List<ConnectivityResult> results) =>
-      results.contains(ConnectivityResult.mobile);
+  /// True when ANY non-none signal is reported.
+  /// This covers: data on, WiFi on, or cellular radio on without data.
+  /// Even if connectivity_plus misses ‘data-off + GSM-on’, the periodic
+  /// timer will still attempt delivery.
+  bool _hasAnySignal(List<ConnectivityResult> results) =>
+      results.any((r) => r != ConnectivityResult.none && r != ConnectivityResult.bluetooth);
 
   /// Drain the queue, sending every pending SMS.
   Future<void> flushQueue() async {
