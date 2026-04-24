@@ -51,7 +51,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     final appState = Provider.of<AppState>(context, listen: false);
     try {
       bool? isAdv = await Nearby().startAdvertising(
-        appState.myEndpointId, // Changed to myEndpointId which matches the QR code
+        appState.currentUserName, // Advertise with real name so sender can display it
         strategy,
         onConnectionInitiated: (String id, ConnectionInfo info) {
           setState(() => connectionStatus = 'Connection requested from ${info.endpointName}...');
@@ -117,7 +117,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myEndpointId = Provider.of<AppState>(context, listen: false).myEndpointId;
+    final myName = Provider.of<AppState>(context, listen: false).currentUserName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Receive Money Offline')),
@@ -144,7 +144,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
                 ],
               ),
               child: QrImageView(
-                data: myEndpointId, // Broadcast our internal ID payload for pairing
+                data: myName, // Broadcast username so sender sees real name
                 version: QrVersions.auto,
                 size: 250.0,
               ),

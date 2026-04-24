@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:provider/provider.dart';
-import 'package:background_sms/background_sms.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'state/app_state.dart';
+import 'services/sms_queue_service.dart';
 import 'success_animation.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -54,29 +54,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       // Local State Deduction
       appState.sendMoney(amount, widget.receiverName);
 
-      // Trigger SMS Log
-      final String smsNumber = '6360139965';
-      final String smsBody = '{"txn_id":"T2","senderId":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverName.trim()}","amount":$amount}';
-      try {
-        var status = await Permission.sms.status;
-        if (!status.isGranted) {
-          status = await Permission.sms.request();
-        }
-
-        if (status.isGranted) {
-          SmsStatus result = await BackgroundSms.sendMessage(
-              phoneNumber: smsNumber, message: smsBody);
-          if (result == SmsStatus.sent) {
-            debugPrint('SMS sent successfully in background.');
-          } else {
-            debugPrint('Failed to send SMS in background.');
-          }
-        } else {
-          debugPrint('SMS permission denied.');
-        }
-      } catch (e) {
-        debugPrint('Error sending background SMS: $e');
-      }
+      // Enqueue SMS — sent immediately if online, persisted if offline
+      final String txnId = 'TXN${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';
+      final String smsBody = '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverName.trim()}","amount":$amount}';
+      await SmsQueueService.instance.enqueue(body: smsBody);
 
       // Dialog & Return
       if (mounted) {

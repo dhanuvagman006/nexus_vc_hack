@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const os = require('os');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
@@ -308,7 +309,24 @@ app.use((err, _req, res, _next) => {
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
+  // Collect all non-loopback IPv4 addresses
+  const nets = os.networkInterfaces();
+  const localIPs = [];
+  for (const iface of Object.values(nets)) {
+    for (const net of iface) {
+      if (net.family === 'IPv4' && !net.internal) {
+        localIPs.push(net.address);
+      }
+    }
+  }
+
   console.log(`\n🏦 BluePay Fake Bank Backend running on http://localhost:${PORT}`);
+
+  if (localIPs.length > 0) {
+    console.log(`\n🌐 Network access (use from phone / other devices):`);
+    localIPs.forEach((ip) => console.log(`   ➜  http://${ip}:${PORT}`));
+  }
+
   console.log(`\n📋 Available Endpoints:`);
   console.log(`   GET    /users                 — List all users`);
   console.log(`   GET    /users/:userId          — Get user details`);

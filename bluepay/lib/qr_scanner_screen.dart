@@ -75,7 +75,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     MaterialPageRoute(
                       builder: (context) => PaymentScreen(
                         endpointId: connId,
-                        receiverName: 'User $code', // Using code as name fallback
+                        receiverName: code, // code is now the receiver's real username
                       ),
                     ),
                   );

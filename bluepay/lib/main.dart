@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'state/app_state.dart';
+import 'services/sms_queue_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Start the SMS queue service — it will watch connectivity and flush pending SMS
+  await SmsQueueService.instance.init();
+
   runApp(
     MultiProvider(
       providers: [

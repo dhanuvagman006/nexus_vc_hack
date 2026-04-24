@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomeDashboard(),
-    const ScanPlaceholderScreen(),
+    const DialpadScreen(),
     const WalletScreen(),
     const HistoryScreen(),
   ];
@@ -56,8 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.qr_code_scanner, size: 28),
-          label: 'Scan',
+          icon: Icon(Icons.dialpad, size: 28),
+          label: 'Dialpad',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
@@ -367,41 +367,182 @@ class HomeDashboard extends StatelessWidget {
   }
 }
 
-class ScanPlaceholderScreen extends StatelessWidget {
-  const ScanPlaceholderScreen({super.key});
+// ─── Dialpad Screen ──────────────────────────────────────────────────────────
+class DialpadScreen extends StatefulWidget {
+  const DialpadScreen({super.key});
+
+  @override
+  State<DialpadScreen> createState() => _DialpadScreenState();
+}
+
+class _DialpadScreenState extends State<DialpadScreen> {
+  String _input = '';
+
+  void _onKey(String key) {
+    setState(() => _input += key);
+  }
+
+  void _onBackspace() {
+    if (_input.isNotEmpty) {
+      setState(() => _input = _input.substring(0, _input.length - 1));
+    }
+  }
+
+  void _onClear() {
+    setState(() => _input = '');
+  }
+
+  Widget _buildKey(String label, {Color? color}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          elevation: 2,
+          shadowColor: Colors.black12,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => _onKey(label),
+            child: SizedBox(
+              height: 68,
+              child: Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w600,
+                    color: color ?? const Color(0xFF1A1A2E),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan')),
-      body: Center(
-        child: ElevatedButton.icon(
-          onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const QRScannerScreen(),
-              ),
-            );
-
-            if (result != null && context.mounted) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Scanned QR Code'),
-                  content: Text('Result: $result'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Dialpad',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            children: [
+              // ── Display ───────────────────────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              );
-            }
-          },
-          icon: const Icon(Icons.qr_code_scanner),
-          label: const Text('Open QR Scanner'),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _input.isEmpty ? 'Enter number' : _input,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                          color: _input.isEmpty ? Colors.grey[400] : Colors.black87,
+                          letterSpacing: 2,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_input.isNotEmpty)
+                      GestureDetector(
+                        onTap: _onBackspace,
+                        onLongPress: _onClear,
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(Icons.backspace_outlined, color: Colors.redAccent, size: 24),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // ── Keys grid ─────────────────────────────────────────────
+              Expanded(
+                child: Column(
+                  children: [
+                    // Row 1: 1 2 3
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildKey('1'),
+                          _buildKey('2'),
+                          _buildKey('3'),
+                        ],
+                      ),
+                    ),
+                    // Row 2: 4 5 6
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildKey('4'),
+                          _buildKey('5'),
+                          _buildKey('6'),
+                        ],
+                      ),
+                    ),
+                    // Row 3: 7 8 9
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildKey('7'),
+                          _buildKey('8'),
+                          _buildKey('9'),
+                        ],
+                      ),
+                    ),
+                    // Row 4: * 0 #
+                    Expanded(
+                      child: Row(
+                        children: [
+                          _buildKey('*', color: Colors.blueAccent),
+                          _buildKey('0'),
+                          _buildKey('#', color: Colors.blueAccent),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // ── Clear button ───────────────────────────────────────────
+              if (_input.isNotEmpty)
+                TextButton.icon(
+                  onPressed: _onClear,
+                  icon: const Icon(Icons.clear, size: 18),
+                  label: const Text('Clear'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                ),
+            ],
+          ),
         ),
       ),
     );
