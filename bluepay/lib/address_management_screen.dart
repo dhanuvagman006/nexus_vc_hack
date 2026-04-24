@@ -46,9 +46,18 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
           children: [
             TextField(
               controller: _addressController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Address',
-                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.only(bottom: 56.0),
+                  child: Icon(Icons.home_outlined),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
               ),
               maxLines: 4,
             ),

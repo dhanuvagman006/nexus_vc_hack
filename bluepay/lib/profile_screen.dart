@@ -4,6 +4,7 @@ import 'balance_card.dart';
 import 'state/app_state.dart';
 import 'edit_profile_screen.dart';
 import 'address_management_screen.dart';
+import 'help_support_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -59,10 +60,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _buildOptionItem(
                         icon: Icons.headset_mic_outlined,
                         title: 'Help & Support',
-                      ),
-                      _buildOptionItem(
-                        icon: Icons.settings_outlined,
-                        title: 'Setting',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HelpSupportScreen(),
+                            ),
+                          );
+                        },
                       ),
                       _buildOptionItem(
                         icon: Icons.logout,
