@@ -1,0 +1,15 @@
+{
+  "name": "bluepay-backend",
+  "version": "1.0.0",
+  "description": "Fake Bank Backend for BluePay offline-first payment system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "uuid": "^11.1.0"
+  }
+}
