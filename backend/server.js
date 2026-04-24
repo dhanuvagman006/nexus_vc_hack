@@ -311,6 +311,56 @@ app.post('/sms', (req, res) => {
   res.status(result.statusCode).json({ ...result.body, parsedFrom: raw });
 });
 
+// ─── POST /relay ──────────────────────────────────────────────────────────────
+// Called by the Android relay app on phone 6360139965.
+// The app receives an SMS whose body is a JSON string, parses it, and POSTs
+// the exact same JSON to this endpoint.
+//
+// Expected body (same shape as /transaction):
+//   {
+//     "txn_id":    "TXN17430...",
+//     "senderId":  "Alexey G.",
+//     "receiverId": "9876543210",
+//     "amount":    500
+//   }
+//
+// Optional senderName / receiverName fields are used to set display names.
+app.post('/relay', (req, res) => {
+  const { txn_id, senderId, senderName, receiverId, receiverName, amount } = req.body;
+
+  // Validate required fields
+  if (!txn_id || !senderId || !receiverId || amount === undefined) {
+    log('RELAY', req.body, 'FAILED — missing fields');
+    return res.status(400).json({
+      status: 'failed',
+      message: 'Missing required fields: txn_id, senderId, receiverId, amount',
+      expected: { txn_id: 'string', senderId: 'string', receiverId: 'string', amount: 'number' },
+    });
+  }
+
+  const parsedAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    log('RELAY', req.body, 'FAILED — invalid amount');
+    return res.status(400).json({
+      status: 'failed',
+      message: `Invalid amount: ${amount}`,
+    });
+  }
+
+  log('RELAY', { txn_id, senderId, receiverId, amount: parsedAmount }, 'RECEIVED FROM RELAY APP');
+
+  const result = processTransaction({
+    txn_id,
+    senderId,
+    senderName:   senderName  || senderId,
+    receiverId,
+    receiverName: receiverName || receiverId,
+    amount: parsedAmount,
+  });
+
+  res.status(result.statusCode).json({ ...result.body, relayedAt: new Date().toISOString() });
+});
+
 // ─── POST /reset ──────────────────────────────────────────────────────────────
 // Demo helper — wipe all users, transactions and logs for a clean run
 app.post('/reset', (_req, res) => {
@@ -371,7 +421,8 @@ app.listen(PORT, () => {
   console.log(`   GET    /transactions           — All transactions`);
   console.log(`   GET    /transactions/:userId   — User history`);
   console.log(`   POST   /sync                   — Batch sync`);
-  console.log(`   POST   /sms                    — SMS payment`);
+  console.log(`   POST   /relay                  — ✅ Android relay app POSTs here (JSON SMS)`);
+  console.log(`   POST   /sms                    — SMS text simulation (legacy)`);
   console.log(`   POST   /reset                  — ⚠ Reset all data (demo only)`);
   console.log(`   GET    /logs                   — Server logs`);
   console.log(`\n✨  No seeded users — all users auto-created on first transaction.\n`);

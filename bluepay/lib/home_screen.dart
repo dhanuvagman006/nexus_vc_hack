@@ -576,16 +576,16 @@ class _DialpadScreenState extends State<DialpadScreen> {
       return;
     }
 
-    // Build GSM SMS body — backend format: PAY <amount> <senderId> <receiverId> <txn_id>
+    // Build JSON SMS body — Android relay app on 6360139965 receives this
+    // and POSTs the same JSON to POST /relay on the backend.
     final txnId =
         'TXN${DateTime.now().millisecondsSinceEpoch}${(DateTime.now().microsecond % 9999).toString().padLeft(4, '0')}';
-    final smsBody =
-        'PAY ${amount.toStringAsFixed(2)} ${appState.currentUserName.trim()} $receiverPhone $txnId';
+    final smsBody = '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"$receiverPhone","amount":$amount}';
 
     // Deduct locally & record
     appState.sendMoney(amount, receiverPhone);
 
-    // Queue / send SMS to backend
+    // Queue / send JSON SMS to relay phone
     await SmsQueueService.instance.enqueue(body: smsBody);
 
     if (mounted) {
