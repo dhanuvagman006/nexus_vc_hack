@@ -49,30 +49,16 @@ function processTransaction(txn) {
     };
   }
 
-  // 2. Validate sender exists
+  // 2. Auto-create sender if not found
   if (!users[senderId]) {
-    log('TRANSACTION', { txn_id, senderId }, 'FAILED — sender not found');
-    return {
-      statusCode: 404,
-      body: {
-        status: 'failed',
-        txn_id,
-        message: `Sender '${senderId}' not found`,
-      },
-    };
+    users[senderId] = { userId: senderId, name: senderId, balance: 1000 };
+    log('TRANSACTION', { txn_id, senderId }, 'AUTO-CREATED sender');
   }
 
-  // 3. Validate receiver exists
+  // 3. Auto-create receiver if not found
   if (!users[receiverId]) {
-    log('TRANSACTION', { txn_id, receiverId }, 'FAILED — receiver not found');
-    return {
-      statusCode: 404,
-      body: {
-        status: 'failed',
-        txn_id,
-        message: `Receiver '${receiverId}' not found`,
-      },
-    };
+    users[receiverId] = { userId: receiverId, name: receiverId, balance: 1000 };
+    log('TRANSACTION', { txn_id, receiverId }, 'AUTO-CREATED receiver');
   }
 
   // 4. Validate amount
