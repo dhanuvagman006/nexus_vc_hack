@@ -56,7 +56,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // Trigger SMS Log
       final String smsNumber = '6360139965';
-      final String smsBody = 'Transaction of \u20B9$amount to ${widget.receiverName} was successful via BluePay.';
+      final String smsBody = '{"txn_id":"T2","senderId":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverName.trim()}","amount":$amount}';
       try {
         var status = await Permission.sms.status;
         if (!status.isGranted) {
