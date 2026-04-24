@@ -28,7 +28,7 @@ class PendingSms {
 ///  - Accepts SMS jobs from anywhere in the app
 ///  - Immediately tries to send if internet is available
 ///  - Otherwise persists the job and retries when connectivity is restored
-class SmsQueueService {
+class SmsQueueService extends ChangeNotifier {
   SmsQueueService._();
   static final SmsQueueService instance = SmsQueueService._();
 
@@ -39,6 +39,9 @@ class SmsQueueService {
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _isOnline = false;
   bool _isFlushing = false;
+
+  /// Whether the device currently has internet access.
+  bool get isOnline => _isOnline;
 
   // ── Initialization ────────────────────────────────────────────────────────
 
@@ -56,6 +59,7 @@ class SmsQueueService {
       final wasOnline = _isOnline;
       _isOnline = _hasInternet(results);
       debugPrint('[SmsQueue] Connectivity changed → online=$_isOnline');
+      notifyListeners(); // update UI connectivity badge
 
       if (!wasOnline && _isOnline) {
         // Just came back online — flush the queue
@@ -85,11 +89,13 @@ class SmsQueueService {
         // Failed despite being online — add to queue for retry
         _queue.add(item);
         await _saveQueue();
+        notifyListeners();
       }
     } else {
       debugPrint('[SmsQueue] Offline — queuing SMS for later: $body');
       _queue.add(item);
       await _saveQueue();
+      notifyListeners();
     }
   }
 
@@ -121,6 +127,7 @@ class SmsQueueService {
       ..addAll(failed);
     await _saveQueue();
     _isFlushing = false;
+    notifyListeners(); // reflect updated count in UI
 
     debugPrint('[SmsQueue] Flush complete. Remaining: ${_queue.length}');
   }

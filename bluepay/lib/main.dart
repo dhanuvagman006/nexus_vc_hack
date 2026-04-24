@@ -13,6 +13,8 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppState()),
+        // Expose the already-initialized singleton so widgets can listen to it
+        ChangeNotifierProvider<SmsQueueService>.value(value: SmsQueueService.instance),
       ],
       child: const MyApp(),
     ),

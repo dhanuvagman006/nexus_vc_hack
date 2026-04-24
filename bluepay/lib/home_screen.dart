@@ -37,38 +37,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
+    return Consumer<SmsQueueService>(
+      builder: (context, smsQ, _) {
+        final pending = smsQ.pendingCount;
+
+        Widget dialpadIcon = const Icon(Icons.dialpad, size: 28);
+        if (pending > 0) {
+          dialpadIcon = Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.dialpad, size: 28),
+              Positioned(
+                top: -4,
+                right: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+                  decoration: const BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    pending > 9 ? '9+' : '$pending',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        return BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+          type: BottomNavigationBarType.fixed,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.blueAccent,
+          unselectedItemColor: Colors.grey,
+          elevation: 20,
+          items: [
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.home, size: 28),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: dialpadIcon,
+              label: 'Dialpad',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
+              label: 'Wallet',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.history, size: 28),
+              label: 'History',
+            ),
+          ],
+        );
       },
-      type: BottomNavigationBarType.fixed,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      backgroundColor: Colors.white,
-      selectedItemColor: Colors.blueAccent,
-      unselectedItemColor: Colors.grey,
-      elevation: 20,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home, size: 28),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dialpad, size: 28),
-          label: 'Dialpad',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
-          label: 'Wallet',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.history, size: 28),
-          label: 'History',
-        ),
-      ],
     );
   }
 }
@@ -85,6 +118,63 @@ class HomeDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
+            // ── Pending SMS banner (visible only when queue > 0) ──────
+            Consumer<SmsQueueService>(
+              builder: (context, smsQ, _) {
+                if (smsQ.pendingCount == 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        // Pulsing hourglass icon
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.hourglass_top_rounded,
+                              color: Colors.white, size: 14),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                              children: [
+                                TextSpan(
+                                  text: '${smsQ.pendingCount} SMS ',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange),
+                                ),
+                                TextSpan(
+                                  text: smsQ.isOnline
+                                      ? 'sending now...'
+                                      : 'queued · waiting for internet',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          smsQ.isOnline ? Icons.wifi : Icons.wifi_off,
+                          size: 16,
+                          color: smsQ.isOnline ? Colors.green : Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 24),
             const BalanceCard(),
             const SizedBox(height: 24),
