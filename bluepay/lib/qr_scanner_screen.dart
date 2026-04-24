@@ -10,7 +10,7 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
   final MobileScannerController cameraController = MobileScannerController();
-  bool isScanned = false;
+  String? scannedCode;
 
   @override
   Widget build(BuildContext context) {
@@ -28,19 +28,83 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           ),
         ],
       ),
-      body: MobileScanner(
-        controller: cameraController,
-        onDetect: (BarcodeCapture capture) {
-          if (isScanned) return;
-          final List<Barcode> barcodes = capture.barcodes;
-          if (barcodes.isNotEmpty) {
-            final String? code = barcodes.first.rawValue;
-            if (code != null) {
-              isScanned = true;
-              Navigator.pop(context, code);
-            }
-          }
-        },
+      body: Stack(
+        children: [
+          MobileScanner(
+            controller: cameraController,
+            onDetect: (BarcodeCapture capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+                setState(() {
+                  scannedCode = barcodes.first.rawValue;
+                });
+              }
+            },
+          ),
+          // Scanner Overlay/Template
+          Center(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: scannedCode != null ? Colors.green : Colors.white,
+                  width: 4.0,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          // Bottom area displaying text and button
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    scannedCode != null
+                        ? 'Scanned: $scannedCode'
+                        : 'Align QR Code within the frame to scan',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: scannedCode != null
+                        ? () {
+                            Navigator.pop(context, scannedCode);
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Use Scanned QR',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
