@@ -5,14 +5,13 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const PORT = process.env.PORT || 3005;
 
-// ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
 
 // ─── In-Memory Data Store ─────────────────────────────────────────────────────
 const users = {
   user1: { userId: 'user1', name: 'Alexey G.', balance: 1000 },
-  user2: { userId: 'user2', name: 'Priya S.',  balance: 1000 },
+  user2: { userId: 'user2', name: 'Priya S.', balance: 1000 },
   user3: { userId: 'user3', name: 'Jordan K.', balance: 1000 },
 };
 
