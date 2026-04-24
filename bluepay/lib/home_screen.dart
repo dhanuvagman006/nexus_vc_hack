@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'qr_scanner_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
               _buildBalanceCard(),
               const SizedBox(height: 24),
-              _buildActionButtons(),
+              _buildActionButtons(context),
               const SizedBox(height: 32),
               const Text(
                 'Transactions',
@@ -131,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                 child: const Row(
                   children: [
                     Text(
-                      'USD',
+                      'INR',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     SizedBox(width: 4),
@@ -143,7 +144,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            '\$175,963.56',
+            '₹0.00',
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -177,7 +178,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -185,6 +186,30 @@ class HomeScreen extends StatelessWidget {
             title: 'Send Money',
             icon: Icons.arrow_upward,
             iconColor: Colors.amber,
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const QRScannerScreen(),
+                ),
+              );
+
+              if (result != null && context.mounted) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Scanned QR Code'),
+                    content: Text('Result: $result'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
           ),
         ),
         const SizedBox(width: 16),
@@ -193,6 +218,9 @@ class HomeScreen extends StatelessWidget {
             title: 'Receive Money',
             icon: Icons.arrow_downward,
             iconColor: Colors.green,
+            onTap: () {
+              // TODO: Implement Receive Money
+            },
           ),
         ),
       ],
@@ -203,39 +231,43 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required IconData icon,
     required Color iconColor,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.2),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.black87),
             ),
-            child: Icon(icon, color: Colors.black87),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
