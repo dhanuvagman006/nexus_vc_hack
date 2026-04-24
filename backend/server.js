@@ -10,15 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 // ─── In-Memory Data Store ─────────────────────────────────────────────────────
-const users = {
-  user1: { userId: 'dhanush', name: 'Alexey G.', balance: 1000 },
-  user2: { userId: 'allen', name: 'Priya S.', balance: 1000 },
-  user3: { userId: 'karthik', name: 'Jordan K.', balance: 1000 },
-};
-
-const transactions = [];         // All processed transactions
-const processedTxnIds = new Set(); // For O(1) idempotency lookup
-const logs = [];                  // Structured log entries
+// No hardcoded seed users — all users are auto-created on first transaction.
+const users = {};
+const transactions = [];          // All processed transactions
+const processedTxnIds = new Set(); // For O(1) idempotency lookup (capped at 10k)
+const logs = [];                  // Structured log entries (capped at 500)
 
 // ─── Logging Utility ──────────────────────────────────────────────────────────
 function log(action, details, result) {
@@ -28,14 +24,39 @@ function log(action, details, result) {
     details,
     result,
   };
+  if (logs.length >= 500) logs.shift(); // rolling cap
   logs.push(entry);
   console.log(`[${entry.timestamp}] ${action} | ${JSON.stringify(details)} → ${result}`);
+}
+
+// ─── Auto-create or fetch user ────────────────────────────────────────────────
+function getOrCreateUser(userId, displayName) {
+  if (!users[userId]) {
+    users[userId] = {
+      userId,
+      name: displayName || userId,
+      balance: 1000.00,
+      createdAt: new Date().toISOString(),
+    };
+    log('AUTO_CREATE_USER', { userId, name: users[userId].name }, 'CREATED');
+  }
+  return users[userId];
+}
+
+// ─── Idempotency Set Cap ──────────────────────────────────────────────────────
+function addProcessedTxn(txnId) {
+  if (processedTxnIds.size >= 10000) {
+    // Remove the oldest entry (Sets preserve insertion order)
+    const oldest = processedTxnIds.values().next().value;
+    processedTxnIds.delete(oldest);
+  }
+  processedTxnIds.add(txnId);
 }
 
 // ─── Core Transaction Processor ───────────────────────────────────────────────
 // Shared by /transaction, /sync, and /sms endpoints
 function processTransaction(txn) {
-  const { txn_id, senderId, receiverId, amount } = txn;
+  const { txn_id, senderId, senderName, receiverId, receiverName, amount } = txn;
 
   // 1. Idempotency — reject duplicate txn_id
   if (processedTxnIds.has(txn_id)) {
@@ -50,20 +71,12 @@ function processTransaction(txn) {
     };
   }
 
-  // 2. Auto-create sender if not found
-  if (!users[senderId]) {
-    users[senderId] = { userId: senderId, name: senderId, balance: 1000 };
-    log('TRANSACTION', { txn_id, senderId }, 'AUTO-CREATED sender');
-  }
+  // 2. Auto-create sender and receiver if not found
+  const sender   = getOrCreateUser(senderId,   senderName);
+  const receiver = getOrCreateUser(receiverId, receiverName);
 
-  // 3. Auto-create receiver if not found
-  if (!users[receiverId]) {
-    users[receiverId] = { userId: receiverId, name: receiverId, balance: 1000 };
-    log('TRANSACTION', { txn_id, receiverId }, 'AUTO-CREATED receiver');
-  }
-
-  // 4. Validate amount
-  if (typeof amount !== 'number' || amount <= 0) {
+  // 3. Validate amount
+  if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) {
     log('TRANSACTION', { txn_id, amount }, 'FAILED — invalid amount');
     return {
       statusCode: 400,
@@ -75,37 +88,37 @@ function processTransaction(txn) {
     };
   }
 
-  // 5. ★ Insufficient funds — DON'T allow the transaction ★
-  if (users[senderId].balance < amount) {
-    log('TRANSACTION', { txn_id, senderId, balance: users[senderId].balance, amount }, 'FAILED — insufficient funds');
+  // 4. Insufficient funds check
+  if (sender.balance < amount) {
+    log('TRANSACTION', { txn_id, senderId, balance: sender.balance, amount }, 'FAILED — insufficient funds');
     return {
       statusCode: 400,
       body: {
         status: 'failed',
         txn_id,
-        message: `Insufficient funds. ${users[senderId].name} has ₹${users[senderId].balance.toFixed(2)} but tried to send ₹${amount.toFixed(2)}`,
-        senderBalance: users[senderId].balance,
+        message: `Insufficient funds. ${sender.name} has ₹${sender.balance.toFixed(2)} but tried to send ₹${amount.toFixed(2)}`,
+        senderBalance: sender.balance,
       },
     };
   }
 
-  // 6. Process — deduct from sender, add to receiver
-  users[senderId].balance -= amount;
-  users[receiverId].balance += amount;
+  // 5. Process — deduct from sender, credit receiver
+  sender.balance   = parseFloat((sender.balance   - amount).toFixed(2));
+  receiver.balance = parseFloat((receiver.balance + amount).toFixed(2));
 
-  // 7. Record the transaction
+  // 6. Record
   const record = {
     txn_id,
     senderId,
-    senderName: users[senderId].name,
+    senderName:   sender.name,
     receiverId,
-    receiverName: users[receiverId].name,
+    receiverName: receiver.name,
     amount,
     timestamp: new Date().toISOString(),
     status: 'success',
   };
   transactions.push(record);
-  processedTxnIds.add(txn_id);
+  addProcessedTxn(txn_id);
 
   log('TRANSACTION', { txn_id, senderId, receiverId, amount }, 'SUCCESS');
 
@@ -115,10 +128,12 @@ function processTransaction(txn) {
       status: 'success',
       txn_id,
       senderId,
+      senderName:    sender.name,
       receiverId,
+      receiverName:  receiver.name,
       amount,
-      senderBalance: users[senderId].balance,
-      receiverBalance: users[receiverId].balance,
+      senderBalance: sender.balance,
+      receiverBalance: receiver.balance,
       timestamp: record.timestamp,
     },
   };
@@ -129,14 +144,12 @@ function processTransaction(txn) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ─── GET /users ───────────────────────────────────────────────────────────────
-// List all users and balances
 app.get('/users', (_req, res) => {
   log('GET_USERS', {}, 'OK');
-  res.json({ users: Object.values(users) });
+  res.json({ count: Object.keys(users).length, users: Object.values(users) });
 });
 
 // ─── GET /users/:userId ───────────────────────────────────────────────────────
-// Get single user details
 app.get('/users/:userId', (req, res) => {
   const user = users[req.params.userId];
   if (!user) {
@@ -148,11 +161,9 @@ app.get('/users/:userId', (req, res) => {
 });
 
 // ─── POST /transaction ───────────────────────────────────────────────────────
-// Process a single transaction (idempotent)
 app.post('/transaction', (req, res) => {
-  const { txn_id, senderId, receiverId, amount } = req.body;
+  const { txn_id, senderId, senderName, receiverId, receiverName, amount } = req.body;
 
-  // Request validation
   if (!txn_id || !senderId || !receiverId || amount === undefined) {
     log('TRANSACTION', req.body, 'FAILED — missing fields');
     return res.status(400).json({
@@ -161,29 +172,34 @@ app.post('/transaction', (req, res) => {
     });
   }
 
-  const result = processTransaction({ txn_id, senderId, receiverId, amount });
+  const result = processTransaction({ txn_id, senderId, senderName, receiverId, receiverName, amount });
   res.status(result.statusCode).json(result.body);
 });
 
+// ─── GET /transactions ────────────────────────────────────────────────────────
+// All transactions, sorted newest-first
+app.get('/transactions', (_req, res) => {
+  log('GET_ALL_TRANSACTIONS', {}, 'OK');
+  res.json({
+    count: transactions.length,
+    transactions: [...transactions].reverse(),
+  });
+});
+
 // ─── GET /transactions/:userId ────────────────────────────────────────────────
-// Transaction history for a specific user (as sender or receiver)
 app.get('/transactions/:userId', (req, res) => {
   const { userId } = req.params;
-
-  if (!users[userId]) {
-    log('GET_HISTORY', { userId }, 'NOT FOUND');
-    return res.status(404).json({ status: 'failed', message: 'User not found' });
-  }
-
   const userTxns = transactions.filter(
     (t) => t.senderId === userId || t.receiverId === userId
   );
-
+  // auto-create so we always return something useful even if user isn't loaded yet
+  const user = getOrCreateUser(userId);
   log('GET_HISTORY', { userId, count: userTxns.length }, 'OK');
   res.json({
     userId,
-    balance: users[userId].balance,
-    transactions: userTxns,
+    name: user.name,
+    balance: user.balance,
+    transactions: [...userTxns].reverse(),
   });
 });
 
@@ -207,42 +223,40 @@ app.post('/sync', (req, res) => {
 
   log('SYNC', { count: txnBatch.length }, 'PROCESSING');
 
-  // Process each transaction sequentially
   const results = txnBatch.map((txn, index) => {
-    // Validate each item has required fields
     if (!txn.txn_id || !txn.senderId || !txn.receiverId || txn.amount === undefined) {
       log('SYNC_ITEM', { index }, 'FAILED — missing fields');
-      return {
-        index,
-        txn_id: txn.txn_id || null,
-        status: 'failed',
-        message: 'Missing required fields',
-      };
+      return { index, txn_id: txn.txn_id || null, status: 'failed', message: 'Missing required fields' };
     }
     const result = processTransaction(txn);
     return { index, ...result.body };
   });
 
-  const successCount = results.filter((r) => r.status === 'success').length;
-  const failedCount = results.filter((r) => r.status === 'failed').length;
+  const successCount   = results.filter((r) => r.status === 'success').length;
+  const failedCount    = results.filter((r) => r.status === 'failed').length;
   const duplicateCount = results.filter((r) => r.status === 'duplicate').length;
 
   log('SYNC', { total: txnBatch.length, successCount, failedCount, duplicateCount }, 'COMPLETE');
 
   res.json({
     status: 'success',
-    summary: {
-      total: txnBatch.length,
-      successful: successCount,
-      failed: failedCount,
-      duplicates: duplicateCount,
-    },
+    summary: { total: txnBatch.length, successful: successCount, failed: failedCount, duplicates: duplicateCount },
     results,
   });
 });
 
 // ─── POST /sms ────────────────────────────────────────────────────────────────
-// SMS simulation — parse "PAY <amount> <senderId> <receiverId> <txn_id>"
+// Real SMS format from the Flutter app:
+//   PAY <amount> <senderId> <receiverId> <txn_id>
+//
+// senderId / receiverId may contain spaces (e.g. "Alexey G.").
+// Strategy: the txn_id is ALWAYS the last token (no spaces), amount is always
+// the first numeric token after "PAY", and the two IDs are everything in between.
+// We identify the txn_id (last word), amount (word index 1), then split the
+// middle into senderId and receiverId using the separator " " after trimming.
+//
+// Format enforced by Flutter: "PAY {amount} {senderId} {receiverId} {txnId}"
+// where senderId and receiverId are single words (usernames trimmed by the app).
 app.post('/sms', (req, res) => {
   const { message } = req.body;
 
@@ -254,87 +268,111 @@ app.post('/sms', (req, res) => {
     });
   }
 
-  // Parse the SMS format: PAY 500 user1 user2 TXN123
-  const parts = message.trim().split(/\s+/);
+  const raw = message.trim();
+  const parts = raw.split(/\s+/);
 
-  if (parts.length !== 5 || parts[0].toUpperCase() !== 'PAY') {
-    log('SMS', { message }, 'FAILED — invalid format');
+  // Minimum: PAY + amount + senderId + receiverId + txnId = 5 tokens
+  if (parts.length < 5 || parts[0].toUpperCase() !== 'PAY') {
+    log('SMS', { message: raw }, 'FAILED — invalid format');
     return res.status(400).json({
       status: 'failed',
       message: 'Invalid SMS format. Expected: "PAY <amount> <senderId> <receiverId> <txn_id>"',
-      example: 'PAY 500 user1 user2 TXN123',
+      received: raw,
     });
   }
 
-  const amount = parseFloat(parts[1]);
-  if (isNaN(amount)) {
-    log('SMS', { message }, 'FAILED — invalid amount in SMS');
+  const amount   = parseFloat(parts[1]);
+  const txn_id   = parts[parts.length - 1];         // last token
+  const senderId = parts[2];                         // 3rd token
+  // Everything between senderId and txn_id is the receiverId (handles spaces)
+  const receiverId = parts.slice(3, parts.length - 1).join(' ');
+
+  if (isNaN(amount) || amount <= 0) {
+    log('SMS', { message: raw }, 'FAILED — invalid amount');
     return res.status(400).json({
       status: 'failed',
       message: `Invalid amount '${parts[1]}' in SMS`,
     });
   }
 
-  const txn = {
-    txn_id: parts[4],
-    senderId: parts[2],
-    receiverId: parts[3],
-    amount,
-  };
+  if (!receiverId) {
+    log('SMS', { message: raw }, 'FAILED — missing receiverId');
+    return res.status(400).json({
+      status: 'failed',
+      message: 'Could not parse receiverId from SMS',
+      received: raw,
+    });
+  }
 
+  const txn = { txn_id, senderId, receiverId, amount };
   log('SMS', { parsed: txn }, 'PARSED');
 
   const result = processTransaction(txn);
-  res.status(result.statusCode).json({
-    ...result.body,
-    parsedFrom: message,
-  });
+  res.status(result.statusCode).json({ ...result.body, parsedFrom: raw });
+});
+
+// ─── POST /reset ──────────────────────────────────────────────────────────────
+// Demo helper — wipe all users, transactions and logs for a clean run
+app.post('/reset', (_req, res) => {
+  // Clear all in-memory state
+  Object.keys(users).forEach((k) => delete users[k]);
+  transactions.length = 0;
+  processedTxnIds.clear();
+  logs.length = 0;
+  log('RESET', {}, 'ALL DATA CLEARED');
+  console.log('\n🔄  Server state reset — fresh start\n');
+  res.json({ status: 'success', message: 'All data cleared. Ready for a fresh demo.' });
 });
 
 // ─── GET /logs ────────────────────────────────────────────────────────────────
-// View server logs (for debugging)
 app.get('/logs', (_req, res) => {
-  res.json({ count: logs.length, logs: logs.slice(-50) }); // Last 50 entries
+  res.json({ count: logs.length, logs: [...logs].reverse() });
+});
+
+// ─── GET /status ──────────────────────────────────────────────────────────────
+app.get('/status', (_req, res) => {
+  res.json({
+    uptime: process.uptime(),
+    users: Object.keys(users).length,
+    transactions: transactions.length,
+    pendingTxnIds: processedTxnIds.size,
+    logs: logs.length,
+  });
 });
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error('Unhandled error:', err);
   log('ERROR', { message: err.message }, 'INTERNAL SERVER ERROR');
-  res.status(500).json({
-    status: 'error',
-    message: 'Internal server error',
-  });
+  res.status(500).json({ status: 'error', message: 'Internal server error' });
 });
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  // Collect all non-loopback IPv4 addresses
   const nets = os.networkInterfaces();
   const localIPs = [];
   for (const iface of Object.values(nets)) {
     for (const net of iface) {
-      if (net.family === 'IPv4' && !net.internal) {
-        localIPs.push(net.address);
-      }
+      if (net.family === 'IPv4' && !net.internal) localIPs.push(net.address);
     }
   }
 
-  console.log(`\n🏦 BluePay Fake Bank Backend running on http://localhost:${PORT}`);
-
+  console.log(`\n🏦  BluePay Backend  →  http://localhost:${PORT}`);
   if (localIPs.length > 0) {
-    console.log(`\n🌐 Network access (use from phone / other devices):`);
+    console.log(`\n🌐  Network access (phones / other devices):`);
     localIPs.forEach((ip) => console.log(`   ➜  http://${ip}:${PORT}`));
   }
 
-  console.log(`\n📋 Available Endpoints:`);
-  console.log(`   GET    /users                 — List all users`);
-  console.log(`   GET    /users/:userId          — Get user details`);
-  console.log(`   POST   /transaction            — Process single transaction`);
-  console.log(`   GET    /transactions/:userId   — Transaction history`);
-  console.log(`   POST   /sync                   — Batch sync transactions`);
-  console.log(`   POST   /sms                    — SMS simulation`);
-  console.log(`   GET    /logs                   — View server logs`);
-  console.log(`\n👥 Seeded users: ${Object.keys(users).join(', ')}`);
-  console.log(`   Each starts with ₹1000.00\n`);
+  console.log(`\n📋  Endpoints:`);
+  console.log(`   GET    /status                 — Server health`);
+  console.log(`   GET    /users                  — All users`);
+  console.log(`   GET    /users/:id              — Single user`);
+  console.log(`   POST   /transaction            — Process transaction`);
+  console.log(`   GET    /transactions           — All transactions`);
+  console.log(`   GET    /transactions/:userId   — User history`);
+  console.log(`   POST   /sync                   — Batch sync`);
+  console.log(`   POST   /sms                    — SMS payment`);
+  console.log(`   POST   /reset                  — ⚠ Reset all data (demo only)`);
+  console.log(`   GET    /logs                   — Server logs`);
+  console.log(`\n✨  No seeded users — all users auto-created on first transaction.\n`);
 });
