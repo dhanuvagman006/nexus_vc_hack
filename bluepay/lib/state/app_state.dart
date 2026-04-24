@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,32 +17,94 @@ class Transaction {
     required this.isPositive,
     required this.date,
   });
+
+  /// Serialize to a JSON-compatible map
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'counterpartName': counterpartName,
+        'amount': amount,
+        'isPositive': isPositive,
+        'date': date.toIso8601String(),
+      };
+
+  /// Reconstruct from a JSON map
+  factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
+        id: json['id'] as String,
+        counterpartName: json['counterpartName'] as String,
+        amount: (json['amount'] as num).toDouble(),
+        isPositive: json['isPositive'] as bool,
+        date: DateTime.parse(json['date'] as String),
+      );
 }
 
 class AppState extends ChangeNotifier {
-  // Demo baseline configuration
+  // ── in-memory state ──────────────────────────────────────────────────────
   String currentUserName = 'Alexey G.';
   String userEmail = 'alexey.g@example.com';
   String userPhone = '';
   String userAddress = '';
-  String myEndpointId = (Random().nextInt(900000) + 100000).toString(); // e.g. "123456"
+  String myEndpointId = '';
 
   double balance = 1000.00;
   List<Transaction> transactions = [];
 
+  // ── SharedPreferences keys ────────────────────────────────────────────────
+  static const _kName = 'currentUserName';
+  static const _kEmail = 'userEmail';
+  static const _kPhone = 'userPhone';
+  static const _kAddress = 'userAddress';
+  static const _kEndpointId = 'myEndpointId';
+  static const _kBalance = 'balance';
+  static const _kTransactions = 'transactions';
+
   AppState() {
-    _loadProfileData();
+    _loadAll();
   }
 
-  Future<void> _loadProfileData() async {
+  // ── Load everything from disk on startup ──────────────────────────────────
+  Future<void> _loadAll() async {
     final prefs = await SharedPreferences.getInstance();
-    currentUserName = prefs.getString('currentUserName') ?? 'Alexey G.';
-    userEmail = prefs.getString('userEmail') ?? 'alexey.g@example.com';
-    userPhone = prefs.getString('userPhone') ?? '';
-    userAddress = prefs.getString('userAddress') ?? '';
+
+    currentUserName = prefs.getString(_kName) ?? 'Alexey G.';
+    userEmail = prefs.getString(_kEmail) ?? 'alexey.g@example.com';
+    userPhone = prefs.getString(_kPhone) ?? '';
+    userAddress = prefs.getString(_kAddress) ?? '';
+
+    // Endpoint ID: generate once and persist so it stays stable across restarts
+    final savedId = prefs.getString(_kEndpointId);
+    if (savedId != null && savedId.isNotEmpty) {
+      myEndpointId = savedId;
+    } else {
+      myEndpointId = (Random().nextInt(900000) + 100000).toString();
+      await prefs.setString(_kEndpointId, myEndpointId);
+    }
+
+    balance = prefs.getDouble(_kBalance) ?? 1000.00;
+
+    final raw = prefs.getString(_kTransactions);
+    if (raw != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(raw);
+        transactions =
+            decoded.map((e) => Transaction.fromJson(e as Map<String, dynamic>)).toList();
+      } catch (_) {
+        transactions = [];
+      }
+    }
+
     notifyListeners();
   }
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  Future<void> _saveBalanceAndTransactions(SharedPreferences prefs) async {
+    await prefs.setDouble(_kBalance, balance);
+    await prefs.setString(
+      _kTransactions,
+      jsonEncode(transactions.map((t) => t.toJson()).toList()),
+    );
+  }
+
+  // ── Profile ───────────────────────────────────────────────────────────────
   Future<void> saveProfileData({
     required String name,
     required String email,
@@ -52,20 +115,21 @@ class AppState extends ChangeNotifier {
     userPhone = phone;
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('currentUserName', currentUserName);
-    await prefs.setString('userEmail', userEmail);
-    await prefs.setString('userPhone', userPhone);
-    
+    await prefs.setString(_kName, currentUserName);
+    await prefs.setString(_kEmail, userEmail);
+    await prefs.setString(_kPhone, userPhone);
+
     notifyListeners();
   }
 
   Future<void> saveAddress(String address) async {
     userAddress = address;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userAddress', userAddress);
+    await prefs.setString(_kAddress, userAddress);
     notifyListeners();
   }
 
+  // ── Money operations ──────────────────────────────────────────────────────
   void receiveMoney(double amount, String senderName) {
     balance += amount;
     transactions.insert(
@@ -79,6 +143,7 @@ class AppState extends ChangeNotifier {
       ),
     );
     notifyListeners();
+    _persistBalanceAndTransactions();
   }
 
   void sendMoney(double amount, String receiverName) {
@@ -95,6 +160,14 @@ class AppState extends ChangeNotifier {
         ),
       );
       notifyListeners();
+      _persistBalanceAndTransactions();
     }
+  }
+
+  /// Fire-and-forget save (runs async without blocking UI)
+  void _persistBalanceAndTransactions() {
+    SharedPreferences.getInstance().then((prefs) {
+      _saveBalanceAndTransactions(prefs);
+    });
   }
 }
