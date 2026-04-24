@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'qr_scanner_screen.dart';
+import 'receive_screen.dart';
+import 'state/app_state.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -212,13 +215,17 @@ class HomeDashboard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            '₹0.00',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Consumer<AppState>(
+            builder: (context, appState, child) {
+              return Text(
+                '₹${appState.balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 24),
           Container(
@@ -288,7 +295,12 @@ class HomeDashboard extends StatelessWidget {
             icon: Icons.arrow_downward,
             iconColor: Colors.green,
             onTap: () {
-              // TODO: Implement Receive Money
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ReceiveScreen(),
+                ),
+              );
             },
           ),
         ),
@@ -342,16 +354,100 @@ class HomeDashboard extends StatelessWidget {
   }
 
   Widget _buildTransactionList() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 32.0),
-      child: Center(
-        child: Text(
-          'No transactions yet.',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 16,
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        if (appState.transactions.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32.0),
+            child: Center(
+              child: Text(
+                'No transactions yet.',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: appState.transactions.length,
+          itemBuilder: (context, index) {
+            final tx = appState.transactions[index];
+            return _buildTransactionItem(
+              name: tx.counterpartName,
+              date: '${tx.date.day}/${tx.date.month}/${tx.date.year} at ${tx.date.hour}:${tx.date.minute.toString().padLeft(2, '0')}',
+              amount: '${tx.isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
+              isPositive: tx.isPositive,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTransactionItem({
+    required String name,
+    required String date,
+    required String amount,
+    required bool isPositive,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.grey[200],
+            child: const Icon(Icons.person, color: Colors.blueAccent),
           ),
-        ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isPositive ? Colors.green : Colors.redAccent,
+            ),
+          ),
+        ],
       ),
     );
   }

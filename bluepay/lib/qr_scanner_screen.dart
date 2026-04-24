@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:nearby_connections/nearby_connections.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'payment_screen.dart';
+import 'state/app_state.dart';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -10,13 +15,110 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
   final MobileScannerController cameraController = MobileScannerController();
+  final Strategy strategy = Strategy.P2P_CLUSTER;
+
   String? scannedCode;
+  bool isConnecting = false;
+  String connectionStatus = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    await [
+      Permission.bluetooth,
+      Permission.bluetoothAdvertise,
+      Permission.bluetoothConnect,
+      Permission.bluetoothScan,
+      Permission.location,
+      Permission.nearbyWifiDevices,
+    ].request();
+  }
+
+  Future<void> _connectToScannedCode(String code) async {
+    setState(() {
+      isConnecting = true;
+      connectionStatus = 'Scanning nearby networks for $code...';
+    });
+
+    final appState = Provider.of<AppState>(context, listen: false);
+
+    try {
+      bool? isDiscovering = await Nearby().startDiscovery(
+        appState.currentUserName, // our name
+        strategy,
+        onEndpointFound: (String id, String endpointName, String serviceId) {
+          if (endpointName == code) {
+            // Found the receiver we scanned!
+            setState(() => connectionStatus = 'Receiver found. Negotiating connection...');
+            Nearby().stopDiscovery();
+            
+            Nearby().requestConnection(
+              appState.currentUserName,
+              id,
+              onConnectionInitiated: (String connId, ConnectionInfo info) {
+                // Auto accept for local execution prototype
+                Nearby().acceptConnection(
+                  connId,
+                  onPayLoadRecieved: (String endId, Payload payload) {},
+                  onPayloadTransferUpdate: (String endId, PayloadTransferUpdate update) {},
+                );
+              },
+              onConnectionResult: (String connId, Status status) {
+                if (status == Status.CONNECTED) {
+                  setState(() => connectionStatus = 'Connected securely!');
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PaymentScreen(
+                        endpointId: connId,
+                        receiverName: 'User $code', // Using code as name fallback
+                      ),
+                    ),
+                  );
+                } else {
+                  if (mounted) {
+                    setState(() {
+                      isConnecting = false;
+                      scannedCode = null; // reset to allow re-scan
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Connection Rejected / Failed')));
+                  }
+                }
+              },
+              onDisconnected: (String id) {},
+            );
+          }
+        },
+        onEndpointLost: (String? id) {},
+        serviceId: "com.example.bluepay",
+      );
+
+      if (!(isDiscovering ?? false)) {
+        setState(() {
+          isConnecting = false;
+          scannedCode = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isConnecting = false;
+          scannedCode = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Discovery failed: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR Code'),
+        title: const Text('Scan Receiver QR'),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on),
@@ -33,15 +135,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
           MobileScanner(
             controller: cameraController,
             onDetect: (BarcodeCapture capture) {
+              if (scannedCode != null || isConnecting) return;
+
               final List<Barcode> barcodes = capture.barcodes;
               if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
-                setState(() {
-                  scannedCode = barcodes.first.rawValue;
-                });
+                setState(() => scannedCode = barcodes.first.rawValue);
               }
             },
           ),
-          // Scanner Overlay/Template
           Center(
             child: Container(
               width: 250,
@@ -55,11 +156,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               ),
             ),
           ),
-          // Bottom area displaying text and button
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               padding: const EdgeInsets.all(24),
+              width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -67,39 +168,45 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    scannedCode != null
-                        ? 'Scanned: $scannedCode'
-                        : 'Align QR Code within the frame to scan',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: scannedCode != null
-                        ? () {
-                            Navigator.pop(context, scannedCode);
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Use Scanned QR',
-                      style: TextStyle(
+                  if (isConnecting) ...[
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(
+                      connectionStatus,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
+                    )
+                  ] else ...[
+                    Text(
+                      scannedCode != null
+                          ? 'Found ID: $scannedCode'
+                          : 'Align Receiver\'s QR Code within the frame to scan',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
                         fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: scannedCode != null ? () => _connectToScannedCode(scannedCode!) : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Connect via Bluetooth/WiFi',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ]
                 ],
               ),
             ),
@@ -111,6 +218,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   @override
   void dispose() {
+    try { Nearby().stopDiscovery(); } catch (_) {}
     cameraController.dispose();
     super.dispose();
   }

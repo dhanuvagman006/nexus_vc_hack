@@ -68,4 +68,13 @@
 	</array>
         <key>NSCameraUsageDescription</key>
         <string>This app needs camera access to scan QR codes</string>
+        <key>NSBluetoothAlwaysUsageDescription</key>
+        <string>This app requires Bluetooth to connect with nearby devices for offline payments.</string>
+        <key>NSBluetoothPeripheralUsageDescription</key>
+        <string>This app requires Bluetooth to connect with nearby devices for offline payments.</string>
+        <key>NSLocalNetworkUsageDescription</key>
+        <string>This app requires local network access to find nearby devices.</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>This app requires location to scan for nearby Bluetooth devices.</string>
+</dict>
 </plist>
