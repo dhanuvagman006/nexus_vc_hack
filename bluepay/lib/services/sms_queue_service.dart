@@ -98,20 +98,13 @@ class SmsQueueService extends ChangeNotifier {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  /// Enqueue an SMS. Tries to send immediately if online; otherwise saves for later.
+  /// Enqueue an SMS. Always tries to send immediately via GSM.
+  /// Only falls back to the persistent queue if sending fails.
   Future<void> enqueue({required String body}) async {
     final item = PendingSms(phoneNumber: _smsNumber, body: body);
-
-    if (_isOnline) {
-      final sent = await _trySend(item);
-      if (!sent) {
-        // Failed despite being online — add to queue for retry
-        _queue.add(item);
-        await _saveQueue();
-        notifyListeners();
-      }
-    } else {
-      debugPrint('[SmsQueue] Offline — queuing SMS for later: $body');
+    final sent = await _trySend(item);
+    if (!sent) {
+      debugPrint('[SmsQueue] Send failed — queuing for retry: $body');
       _queue.add(item);
       await _saveQueue();
       notifyListeners();

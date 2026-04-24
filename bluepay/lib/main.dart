@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'bluedart',
+      title: 'BluePay',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
@@ -62,18 +62,26 @@ class _SplashScreenState extends State<SplashScreen> {
     return const Scaffold(
       backgroundColor: Colors.blue,
       body: Center(
-        child: Text(
-          'bluedart',
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'BluePay',
+              style: TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.5,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Offline Rural Payments',
+              style: TextStyle(fontSize: 14, color: Colors.white70),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-// Ensure you imported home_screen.dart at the top of the file
-
