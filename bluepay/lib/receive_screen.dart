@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'state/app_state.dart';
+import 'success_animation.dart';
 
 class ReceiveScreen extends StatefulWidget {
   const ReceiveScreen({super.key});
@@ -98,23 +99,10 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
         Provider.of<AppState>(context, listen: false).receiveMoney(amount, senderName);
 
         // Show Success dialog and return
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text('Payment Received!'),
-            content: Text('You received ₹$amount from $senderName offline!'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Dismiss dialog
-                  Navigator.pop(context); // Go back home
-                },
-                child: const Text('Awesome'),
-              )
-            ],
-          ),
-        );
+        showSuccessAnimation(context, () {
+          Navigator.pop(context); // Dismiss animation overlay
+          Navigator.pop(context); // Go back home
+        });
       }
     } catch (e) {
       debugPrint("Payload parse error: $e");

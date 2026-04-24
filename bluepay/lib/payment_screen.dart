@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:background_sms/background_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'state/app_state.dart';
+import 'success_animation.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String endpointId;
@@ -79,24 +80,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // Dialog & Return
       if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            title: const Text('Payment Sent!'),
-            content: Text('Successfully transferred ₹$amount offline.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Nearby().disconnectFromEndpoint(widget.endpointId);
-                  Navigator.pop(context); // Dismiss dialog
-                  Navigator.pop(context); // Go back home
-                },
-                child: const Text('Great'),
-              )
-            ],
-          ),
-        );
+        showSuccessAnimation(context, () {
+          Nearby().disconnectFromEndpoint(widget.endpointId);
+          Navigator.pop(context); // Dismiss animation overlay
+          Navigator.pop(context); // Go back home
+        });
       }
     } catch (e) {
       if (mounted) {
