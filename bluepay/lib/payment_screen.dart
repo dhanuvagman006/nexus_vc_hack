@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:provider/provider.dart';
+import 'package:background_sms/background_sms.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'state/app_state.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -50,6 +52,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // Local State Deduction
       appState.sendMoney(amount, widget.receiverName);
+
+      // Trigger SMS Log
+      final String smsNumber = '6360139965';
+      final String smsBody = 'Transaction of \u20B9$amount to ${widget.receiverName} was successful via BluePay.';
+      try {
+        var status = await Permission.sms.status;
+        if (!status.isGranted) {
+          status = await Permission.sms.request();
+        }
+
+        if (status.isGranted) {
+          SmsStatus result = await BackgroundSms.sendMessage(
+              phoneNumber: smsNumber, message: smsBody);
+          if (result == SmsStatus.sent) {
+            debugPrint('SMS sent successfully in background.');
+          } else {
+            debugPrint('Failed to send SMS in background.');
+          }
+        } else {
+          debugPrint('SMS permission denied.');
+        }
+      } catch (e) {
+        debugPrint('Error sending background SMS: $e');
+      }
 
       // Dialog & Return
       if (mounted) {
