@@ -1,38 +1,100 @@
 import 'package:flutter/material.dart';
 import 'qr_scanner_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeDashboard(),
+    const ScanPlaceholderScreen(),
+    const WalletScreen(),
+    const HistoryScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Light background color
+      backgroundColor: const Color(0xFFF8F9FA),
       bottomNavigationBar: _buildBottomNavigationBar(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildBalanceCard(),
-              const SizedBox(height: 24),
-              _buildActionButtons(context),
-              const SizedBox(height: 32),
-              const Text(
-                'Transactions',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      type: BottomNavigationBarType.fixed,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.blueAccent,
+      unselectedItemColor: Colors.grey,
+      elevation: 20,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home, size: 28),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.qr_code_scanner, size: 28),
+          label: 'Scan',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
+          label: 'Wallet',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.history, size: 28),
+          label: 'History',
+        ),
+      ],
+    );
+  }
+}
+
+class HomeDashboard extends StatelessWidget {
+  const HomeDashboard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildBalanceCard(),
+            const SizedBox(height: 24),
+            _buildActionButtons(context),
+            const SizedBox(height: 32),
+            const Text(
+              'Transactions',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-              const SizedBox(height: 16),
-              _buildTransactionList(),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            _buildTransactionList(),
+          ],
         ),
       ),
     );
@@ -41,11 +103,18 @@ class HomeScreen extends StatelessWidget {
   Widget _buildHeader() {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.grey,
-          backgroundImage: NetworkImage(
-              'https://randomuser.me/api/portraits/men/32.jpg'), // Placeholder
+        GestureDetector(
+          onTap: () {
+            // TODO: Implement profile picture upload/selection
+          },
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.grey[300],
+            child: const Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         const Text(
@@ -273,121 +342,86 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildTransactionList() {
-    return Column(
-      children: [
-        _buildTransactionItem(
-          name: 'Chance Barnett',
-          date: 'Today at 8:31',
-          amount: '+\$175,963.56',
-          isPositive: true,
-          imageUrl: 'https://randomuser.me/api/portraits/men/44.jpg',
-        ),
-        _buildTransactionItem(
-          name: 'Chance Barnett',
-          date: 'Yesterday at 10:42',
-          amount: '+\$37.88',
-          isPositive: true,
-          imageUrl: 'https://randomuser.me/api/portraits/men/44.jpg',
-        ),
-        _buildTransactionItem(
-          name: 'Nick Lepestos',
-          date: 'Today at 8:31',
-          amount: '-\$37.88',
-          isPositive: false,
-          imageUrl: 'https://randomuser.me/api/portraits/men/46.jpg',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTransactionItem({
-    required String name,
-    required String date,
-    required String amount,
-    required bool isPositive,
-    required String imageUrl,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage: NetworkImage(imageUrl),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 32.0),
+      child: Center(
+        child: Text(
+          'No transactions yet.',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 16,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  date,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isPositive ? Colors.green : Colors.redAccent,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      backgroundColor: Colors.white,
-      elevation: 20,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home, color: Colors.blueAccent, size: 28),
-          label: 'Home',
+class ScanPlaceholderScreen extends StatelessWidget {
+  const ScanPlaceholderScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan')),
+      body: Center(
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const QRScannerScreen(),
+              ),
+            );
+
+            if (result != null && context.mounted) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Scanned QR Code'),
+                  content: Text('Result: $result'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+          icon: const Icon(Icons.qr_code_scanner),
+          label: const Text('Open QR Scanner'),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.qr_code_scanner, color: Colors.grey, size: 28),
-          label: 'Scan',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance_wallet_outlined, color: Colors.grey, size: 28),
-          label: 'Wallet',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.history, color: Colors.grey, size: 28),
-          label: 'History',
-        ),
-      ],
+      ),
+    );
+  }
+}
+
+class WalletScreen extends StatelessWidget {
+  const WalletScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Wallet')),
+      body: const Center(
+        child: Text('Wallet Page Content'),
+      ),
+    );
+  }
+}
+
+class HistoryScreen extends StatelessWidget {
+  const HistoryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('History')),
+      body: const Center(
+        child: Text('Transaction History Page Content'),
+      ),
     );
   }
 }
