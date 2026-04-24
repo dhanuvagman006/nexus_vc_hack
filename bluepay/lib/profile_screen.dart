@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'balance_card.dart';
+import 'state/app_state.dart';
+import 'edit_profile_screen.dart';
+import 'address_management_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,50 +17,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildDarkHeader(),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 24.0,
-              ),
-              child: Column(
-                children: [
-                  const BalanceCard(),
-                  const SizedBox(height: 24),
-                  _buildOptionItem(Icons.person_outline, 'Edit Profile'),
-                  _buildOptionItem(
-                    Icons.location_on_outlined,
-                    'Address Management',
+      body: Consumer<AppState>(
+        builder: (context, appState, child) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildDarkHeader(appState),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 24.0,
                   ),
-                  _buildOptionItem(
-                    Icons.headset_mic_outlined,
-                    'Help & Support',
+                  child: Column(
+                    children: [
+                      const BalanceCard(),
+                      const SizedBox(height: 24),
+                      _buildOptionItem(
+                        icon: Icons.person_outline,
+                        title: 'Edit Profile',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EditProfileScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.location_on_outlined,
+                        title: 'Address Management',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddressManagementScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.headset_mic_outlined,
+                        title: 'Help & Support',
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.settings_outlined,
+                        title: 'Setting',
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.logout,
+                        title: 'Log out',
+                        isDestructive: true,
+                      ),
+                    ],
                   ),
-                  _buildOptionItem(Icons.settings_outlined, 'Setting'),
-                  _buildOptionItem(
-                    Icons.logout,
-                    'Log out',
-                    isDestructive: true,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildDarkHeader() {
+  Widget _buildDarkHeader(AppState appState) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(
-          0xFF222232,
-        ), // Dark color matching the app's details button
+        color: Color(0xFF222232),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
@@ -89,6 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(width: 48), // Balance spacing
                 ],
               ),
             ),
@@ -99,17 +128,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white24, width: 2),
               ),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 46,
-                backgroundImage: NetworkImage(
-                  'https://randomuser.me/api/portraits/men/32.jpg',
+                backgroundColor: const Color(0xFF75B9FB),
+                child: Text(
+                  appState.currentUserName.isNotEmpty
+                      ? appState.currentUserName[0].toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Alexey G.',
-              style: TextStyle(
+            Text(
+              appState.currentUserName,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -117,33 +154,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'alexey.g@example.com',
-              style: TextStyle(fontSize: 14, color: Colors.white70),
+              appState.userEmail,
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: _buildHeaderButton(
-                      Icons.notifications_none_outlined,
-                      'Notification',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildHeaderButton(
-                      Icons.card_giftcard_outlined,
-                      'Voucher',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildHeaderButton(Icons.history, 'History')),
-                ],
+            if (appState.userAddress.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  appState.userAddress,
+                  style: const TextStyle(fontSize: 14, color: Colors.white54),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 32),
           ],
         ),
@@ -151,64 +177,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeaderButton(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A3D),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOptionItem(
-    IconData icon,
-    String title, {
+  Widget _buildOptionItem({
+    required IconData icon,
+    required String title,
     bool isDestructive = false,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: isDestructive ? Colors.redAccent : Colors.black87),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDestructive ? Colors.redAccent : Colors.black87,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isDestructive ? Colors.redAccent : Colors.black87),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDestructive ? Colors.redAccent : Colors.black87,
+                ),
               ),
             ),
-          ),
-          if (!isDestructive)
-            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
-        ],
+            if (!isDestructive)
+              const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+          ],
+        ),
       ),
     );
   }

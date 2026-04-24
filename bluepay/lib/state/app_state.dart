@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Transaction {
   final String id;
@@ -20,10 +21,50 @@ class Transaction {
 class AppState extends ChangeNotifier {
   // Demo baseline configuration
   String currentUserName = 'Alexey G.';
+  String userEmail = 'alexey.g@example.com';
+  String userPhone = '';
+  String userAddress = '';
   String myEndpointId = (Random().nextInt(900000) + 100000).toString(); // e.g. "123456"
 
   double balance = 1000.00;
   List<Transaction> transactions = [];
+
+  AppState() {
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    currentUserName = prefs.getString('currentUserName') ?? 'Alexey G.';
+    userEmail = prefs.getString('userEmail') ?? 'alexey.g@example.com';
+    userPhone = prefs.getString('userPhone') ?? '';
+    userAddress = prefs.getString('userAddress') ?? '';
+    notifyListeners();
+  }
+
+  Future<void> saveProfileData({
+    required String name,
+    required String email,
+    required String phone,
+  }) async {
+    currentUserName = name;
+    userEmail = email;
+    userPhone = phone;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('currentUserName', currentUserName);
+    await prefs.setString('userEmail', userEmail);
+    await prefs.setString('userPhone', userPhone);
+    
+    notifyListeners();
+  }
+
+  Future<void> saveAddress(String address) async {
+    userAddress = address;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userAddress', userAddress);
+    notifyListeners();
+  }
 
   void receiveMoney(double amount, String senderName) {
     balance += amount;
