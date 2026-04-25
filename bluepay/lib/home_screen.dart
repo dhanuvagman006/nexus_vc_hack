@@ -6,6 +6,7 @@ import 'state/app_state.dart';
 import 'profile_screen.dart';
 import 'balance_card.dart';
 import 'services/sms_queue_service.dart';
+import 'l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -83,18 +84,18 @@ class _HomeScreenState extends State<HomeScreen> {
           unselectedItemColor: Colors.grey,
           elevation: 20,
           items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.home, size: 28),
-              label: 'Home',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home, size: 28),
+              label: context.l10n.home,
             ),
-            BottomNavigationBarItem(icon: dialpadIcon, label: 'Dialpad'),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
-              label: 'Wallet',
+            BottomNavigationBarItem(icon: dialpadIcon, label: context.l10n.dialpad),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.account_balance_wallet_outlined, size: 28),
+              label: context.l10n.wallet,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.history, size: 28),
-              label: 'History',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.history, size: 28),
+              label: context.l10n.history,
             ),
           ],
         );
@@ -156,7 +157,7 @@ class HomeDashboard extends StatelessWidget {
                               ),
                               children: [
                                 TextSpan(
-                                  text: '${smsQ.pendingCount} SMS ',
+                                  text: '${smsQ.pendingCount} ${context.l10n.pendingSms} ',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.orange,
@@ -164,8 +165,8 @@ class HomeDashboard extends StatelessWidget {
                                 ),
                                 TextSpan(
                                   text: smsQ.hasSignal
-                                      ? 'sending now...'
-                                      : 'queued · waiting for GSM signal',
+                                      ? context.l10n.sendingNow
+                                      : context.l10n.queuedWaitingForGsm,
                                 ),
                               ],
                             ),
@@ -189,9 +190,9 @@ class HomeDashboard extends StatelessWidget {
             const SizedBox(height: 24),
             _buildActionButtons(context),
             const SizedBox(height: 32),
-            const Text(
-              'Transactions',
-              style: TextStyle(
+            Text(
+              context.l10n.transactionHistory,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -270,7 +271,7 @@ class HomeDashboard extends StatelessWidget {
       children: [
         Expanded(
           child: _buildActionButton(
-            title: 'Send Money',
+            title: context.l10n.sendMoney,
             icon: Icons.arrow_upward,
             iconColor: Colors.amber,
             onTap: () async {
@@ -302,7 +303,7 @@ class HomeDashboard extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _buildActionButton(
-            title: 'Receive Money',
+            title: context.l10n.receiveMoney,
             icon: Icons.arrow_downward,
             iconColor: Colors.green,
             onTap: () {
@@ -367,8 +368,8 @@ class HomeDashboard extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 32.0),
             child: Center(
               child: Text(
-                'No transactions yet.',
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+                context.l10n.noTransactionsYet,
+                style: const TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
           );
@@ -629,8 +630,8 @@ class _DialpadScreenState extends State<DialpadScreen> {
                     SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'Type  *#amount#phonenumber#  to send money via GSM',
-                        style: TextStyle(
+                        context.l10n.hintDialpad,
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Colors.blueAccent,
                         ),
@@ -670,7 +671,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
                         const SizedBox(width: 24), // Balance spacing
                         Expanded(
                           child: Text(
-                            _input.isEmpty ? 'Enter number' : _input,
+                            _input.isEmpty ? context.l10n.enterNumber : _input,
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -749,9 +750,9 @@ class WalletScreen extends StatelessWidget {
             backgroundColor: Colors.white,
             elevation: 0,
             centerTitle: true,
-            title: const Text(
-              'Wallet',
-              style: TextStyle(
+            title: Text(
+              context.l10n.wallet,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -809,9 +810,9 @@ class WalletScreen extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 // ── Account Info ──────────────────────────────────────────
-                const Text(
-                  'Account Info',
-                  style: TextStyle(
+                Text(
+                  context.l10n.accountInfo,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -822,13 +823,13 @@ class WalletScreen extends StatelessWidget {
                   children: [
                     _InfoRow(
                       icon: Icons.person_outline,
-                      label: 'Name',
+                      label: context.l10n.name,
                       value: appState.currentUserName,
                     ),
                     const Divider(height: 1),
                     _InfoRow(
                       icon: Icons.email_outlined,
-                      label: 'Email',
+                      label: context.l10n.email,
                       value: appState.userEmail.isNotEmpty
                           ? appState.userEmail
                           : '—',
@@ -836,7 +837,7 @@ class WalletScreen extends StatelessWidget {
                     const Divider(height: 1),
                     _InfoRow(
                       icon: Icons.phone_outlined,
-                      label: 'Phone',
+                      label: context.l10n.phone,
                       value: appState.userPhone.isNotEmpty
                           ? appState.userPhone
                           : '—',
@@ -844,7 +845,7 @@ class WalletScreen extends StatelessWidget {
                     const Divider(height: 1),
                     _InfoRow(
                       icon: Icons.tag_outlined,
-                      label: 'Endpoint ID',
+                      label: context.l10n.endpointId,
                       value: appState.myEndpointId,
                     ),
                   ],
@@ -852,9 +853,9 @@ class WalletScreen extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 // ── Quick actions ─────────────────────────────────────────
-                const Text(
-                  'Quick Actions',
-                  style: TextStyle(
+                Text(
+                  context.l10n.quickActions,
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -865,7 +866,7 @@ class WalletScreen extends StatelessWidget {
                   children: [
                     _QuickAction(
                       icon: Icons.arrow_upward,
-                      label: 'Send Money',
+                      label: context.l10n.sendMoney,
                       iconBgColor: const Color(0xFFFFF3E0), // Light orange/yellow
                       onTap: () => Navigator.push(
                         context,
@@ -877,7 +878,7 @@ class WalletScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     _QuickAction(
                       icon: Icons.arrow_downward,
-                      label: 'Receive Money',
+                      label: context.l10n.receiveMoney,
                       iconBgColor: const Color(0xFFE8F5E9), // Light green
                       onTap: () => Navigator.push(
                         context,
@@ -888,6 +889,8 @@ class WalletScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                _LanguageSwitcherRow(),
                 const SizedBox(height: 16),
               ],
             ),
@@ -1110,9 +1113,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
             backgroundColor: Colors.white,
             elevation: 0,
             centerTitle: true,
-            title: const Text(
-              'Transaction History',
-              style: TextStyle(
+            title: Text(
+              context.l10n.transactionHistory,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -1127,19 +1130,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Row(
                   children: [
                     _FilterTab(
-                      label: 'All',
+                      label: context.l10n.all,
                       active: _filter == 0,
                       onTap: () => setState(() => _filter = 0),
                     ),
                     const SizedBox(width: 8),
                     _FilterTab(
-                      label: 'Sent',
+                      label: context.l10n.sent,
                       active: _filter == 1,
                       onTap: () => setState(() => _filter = 1),
                     ),
                     const SizedBox(width: 8),
                     _FilterTab(
-                      label: 'Received',
+                      label: context.l10n.received,
                       active: _filter == 2,
                       onTap: () => setState(() => _filter = 2),
                     ),
@@ -1181,10 +1184,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
           const SizedBox(height: 16),
           Text(
             _filter == 0
-                ? 'No transactions yet'
+                ? context.l10n.noTransactionsYet
                 : _filter == 1
-                ? 'No sent transactions'
-                : 'No received transactions',
+                ? context.l10n.noSentTransactions
+                : context.l10n.noReceivedTransactions,
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[500],
@@ -1193,7 +1196,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Transactions will appear here',
+            context.l10n.transactionsWillAppearHere,
             style: TextStyle(fontSize: 13, color: Colors.grey[400]),
           ),
         ],
@@ -1247,7 +1250,7 @@ class _TxnCard extends StatelessWidget {
     final icon = isPositive
         ? Icons.arrow_downward_rounded
         : Icons.arrow_upward_rounded;
-    final label = isPositive ? 'Received' : 'Sent';
+    final label = isPositive ? context.l10n.received : context.l10n.sent;
     final date = tx.date;
     final dateStr =
         '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}  '
@@ -1403,6 +1406,74 @@ class TransactionItem extends StatelessWidget {
               fontSize: 16,
               color: isPositive ? Colors.green : Colors.redAccent,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageSwitcherRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE3F2FD),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.language, color: Colors.blueAccent, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              context.l10n.changeLanguage,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          Consumer<AppState>(
+            builder: (context, appState, _) {
+              return DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: appState.locale,
+                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      appState.setLocale(newValue);
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(value: 'en', child: Text('English')),
+                    DropdownMenuItem(value: 'hi', child: Text('हिंदी')),
+                    DropdownMenuItem(value: 'kn', child: Text('ಕನ್ನಡ')),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

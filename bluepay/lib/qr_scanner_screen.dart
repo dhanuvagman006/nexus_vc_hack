@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'payment_screen.dart';
 import 'state/app_state.dart';
+import 'l10n/app_localizations.dart';
 
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key});
@@ -118,7 +119,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Receiver QR'),
+        title: Text(context.l10n.scanQrCode),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on),
@@ -180,7 +181,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     Text(
                       scannedCode != null
                           ? 'Found ID: $scannedCode'
-                          : 'Align Receiver\'s QR Code within the frame to scan',
+                          : context.l10n.alignQrInsideFrame,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 16,

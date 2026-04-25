@@ -44,6 +44,7 @@ class AppState extends ChangeNotifier {
   String userPhone = '';
   String userAddress = '';
   String myEndpointId = '';
+  String locale = 'en'; // default to English
 
   double balance = 1000.00;
   List<Transaction> transactions = [];
@@ -56,6 +57,7 @@ class AppState extends ChangeNotifier {
   static const _kEndpointId = 'myEndpointId';
   static const _kBalance = 'balance';
   static const _kTransactions = 'transactions';
+  static const _kLocale = 'app_locale';
 
   AppState() {
     _loadAll();
@@ -69,6 +71,7 @@ class AppState extends ChangeNotifier {
     userEmail = prefs.getString(_kEmail) ?? 'alexey.g@example.com';
     userPhone = prefs.getString(_kPhone) ?? '';
     userAddress = prefs.getString(_kAddress) ?? '';
+    locale = prefs.getString(_kLocale) ?? 'en';
 
     // Endpoint ID: generate once and persist so it stays stable across restarts
     final savedId = prefs.getString(_kEndpointId);
@@ -126,6 +129,15 @@ class AppState extends ChangeNotifier {
     userAddress = address;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kAddress, userAddress);
+    notifyListeners();
+  }
+
+  // ── Language ──────────────────────────────────────────────────────────────
+  Future<void> setLocale(String newLocale) async {
+    if (locale == newLocale) return;
+    locale = newLocale;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLocale, locale);
     notifyListeners();
   }
 
