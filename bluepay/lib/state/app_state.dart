@@ -164,6 +164,15 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Called when a BPAY balance-update SMS is received from the relay app.
+  /// Overwrites local balance with the server-confirmed value and persists it.
+  void syncBalance(double serverBalance) {
+    balance = serverBalance;
+    notifyListeners();
+    _persistBalanceAndTransactions();
+    debugPrint('[AppState] Balance synced from server: ₹$serverBalance');
+  }
+
   /// Fire-and-forget save (runs async without blocking UI)
   void _persistBalanceAndTransactions() {
     SharedPreferences.getInstance().then((prefs) {

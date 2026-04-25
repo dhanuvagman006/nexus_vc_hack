@@ -3,11 +3,13 @@ import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'state/app_state.dart';
 import 'services/sms_queue_service.dart';
+import 'services/sms_balance_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Start the SMS queue service — it will watch connectivity and flush pending SMS
   await SmsQueueService.instance.init();
+  SmsBalanceService.instance.init(); // start listening for BPAY balance-update SMS
 
   runApp(
     MultiProvider(
@@ -21,8 +23,47 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Listen for BPAY balance-update SMS and sync AppState.
+    // Stream callbacks are synchronous w.r.t. the event loop — not async gaps —
+    // but we still guard with mounted for safety after widget removal.
+    SmsBalanceService.instance.balanceUpdates.listen((update) {
+      if (!mounted) return;
+
+      // ignore: use_build_context_synchronously
+      final appState = Provider.of<AppState>(context, listen: false);
+      appState.syncBalance(update.newBalance);
+
+      final label = update.type == 'S' ? 'Payment confirmed' : 'Money received';
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$label · ₹${update.amount.toStringAsFixed(2)} · '
+            'Balance: ₹${update.newBalance.toStringAsFixed(2)}',
+          ),
+          backgroundColor: update.type == 'R' ? Colors.green : Colors.blueAccent,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    SmsBalanceService.instance.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

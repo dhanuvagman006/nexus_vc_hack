@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:background_sms/background_sms.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,10 +14,7 @@ class PendingSms {
 
   PendingSms({required this.phoneNumber, required this.body});
 
-  Map<String, dynamic> toJson() => {
-        'phoneNumber': phoneNumber,
-        'body': body,
-      };
+  Map<String, dynamic> toJson() => {'phoneNumber': phoneNumber, 'body': body};
 
   factory PendingSms.fromJson(Map<String, dynamic> json) => PendingSms(
         phoneNumber: json['phoneNumber'] as String,
@@ -26,38 +24,41 @@ class PendingSms {
 
 /// Singleton SMS queue that correctly handles airplane mode.
 ///
-/// KEY INSIGHT: BackgroundSms.sendMessage() returns SmsStatus.sent even when
-/// airplane mode is ON — Android accepts the SMS into its own outbox and
-/// reports "sent" to the app. We CANNOT trust that return value.
+/// WHY connectivity_plus alone is wrong:
+///   - connectivity_plus reports ConnectivityResult.none when data is OFF but
+///     GSM radio is ON (airplane mode OFF). SMS doesn't need mobile data.
+///   - It only goes to 'mobile' when internet data is active.
 ///
-/// Strategy:
-///  1. Before every send attempt, check connectivity_plus.
-///  2. If result is [none] (airplane mode / no radio) → skip send, add to queue.
-///  3. If any signal is present → attempt the actual SMS send.
-///  4. On connectivity change from none→signal, auto-flush the queue.
-///  5. 30-second periodic timer as a safety net.
+/// FIX: Use a native method channel to read Settings.Global.AIRPLANE_MODE_ON.
+///   - Airplane mode ON  → cannot send SMS (radio off) → queue it
+///   - Airplane mode OFF → attempt SMS immediately (data doesn't matter)
+///
+/// Auto-flush triggers:
+///   1. connectivity_plus: none → any transition (covers airplane off + data on)
+///   2. 30-second periodic timer (safety net for data-off + GSM-on case)
 class SmsQueueService extends ChangeNotifier {
   SmsQueueService._();
   static final SmsQueueService instance = SmsQueueService._();
 
   static const _kQueueKey  = 'sms_pending_queue';
   static const _smsNumber  = '6360139965';
+  static const _systemChannel = MethodChannel('com.example.bluepay/system');
 
   final List<PendingSms> _queue = [];
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   Timer? _retryTimer;
-  bool _hasSignal  = false;  // any non-none connectivity
-  bool _isFlushing = false;
+  bool _isAirplaneMode = false;
+  bool _isFlushing     = false;
 
   // ── Public state ──────────────────────────────────────────────────────────
 
-  /// True when device is NOT in airplane mode (any radio signal detected).
-  bool get hasSignal   => _hasSignal;
+  /// True when the GSM radio is active (airplane mode is OFF).
+  bool get hasSignal    => !_isAirplaneMode;
 
-  /// True when device has internet (mobile data or WiFi).
-  bool get isOnline    => _hasSignal; // kept for UI compatibility
+  /// Alias kept for UI compatibility.
+  bool get isOnline     => !_isAirplaneMode;
 
-  /// Number of SMS messages waiting to be sent.
+  /// Number of SMS messages currently queued.
   int  get pendingCount => _queue.length;
 
   // ── Initialization ────────────────────────────────────────────────────────
@@ -65,40 +66,44 @@ class SmsQueueService extends ChangeNotifier {
   Future<void> init() async {
     await _loadQueue();
 
-    // Bootstrap current connectivity state
-    final results = await Connectivity().checkConnectivity();
-    _hasSignal = _anySignal(results);
-    debugPrint('[SmsQueue] Init — signal=$_hasSignal  queued=${_queue.length}');
+    _isAirplaneMode = await _checkAirplaneMode();
+    debugPrint('[SmsQueue] Init — airplaneMode=$_isAirplaneMode  queued=${_queue.length}');
 
-    // Listen for connectivity changes
+    // Listen for connectivity changes. When the status changes from none →
+    // anything, airplane mode was likely just turned off. Re-check and flush.
     _connectivitySub = Connectivity()
         .onConnectivityChanged
         .listen((List<ConnectivityResult> results) async {
-      final hadSignal = _hasSignal;
-      _hasSignal = _anySignal(results);
+      final prev = _isAirplaneMode;
+      _isAirplaneMode = await _checkAirplaneMode();
 
-      debugPrint('[SmsQueue] Connectivity changed → signal=$_hasSignal  '
-          '(was $hadSignal)  queued=${_queue.length}');
+      debugPrint('[SmsQueue] Connectivity event → airplaneMode=$_isAirplaneMode '
+          '(was $prev)  queued=${_queue.length}');
       notifyListeners();
 
-      // Gained signal → flush queue immediately
-      if (!hadSignal && _hasSignal && _queue.isNotEmpty) {
-        debugPrint('[SmsQueue] Signal regained — flushing ${_queue.length} queued SMS(es)');
+      // Airplane mode turned off → flush queued messages
+      if (prev && !_isAirplaneMode && _queue.isNotEmpty) {
+        debugPrint('[SmsQueue] Airplane mode OFF — flushing ${_queue.length} queued SMS(es)');
         await flushQueue();
       }
     });
 
-    // Periodic safety-net: retry every 30 s in case connectivity_plus
-    // misses a state change (e.g. data-off but GSM radio on)
+    // Periodic safety-net every 30 s:
+    // Handles the case where airplane mode is already off at startup but
+    // connectivity_plus doesn't fire a change event.
     _retryTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
-      if (_queue.isNotEmpty && _hasSignal) {
-        debugPrint('[SmsQueue] Periodic retry — ${_queue.length} pending');
-        await flushQueue();
+      if (_queue.isNotEmpty) {
+        _isAirplaneMode = await _checkAirplaneMode();
+        notifyListeners();
+        if (!_isAirplaneMode) {
+          debugPrint('[SmsQueue] Periodic retry — airplane off, flushing ${_queue.length}');
+          await flushQueue();
+        }
       }
     });
 
-    // Flush immediately if we already have signal and items in queue
-    if (_hasSignal && _queue.isNotEmpty) {
+    // Flush on startup if airplane mode is already off
+    if (!_isAirplaneMode && _queue.isNotEmpty) {
       await flushQueue();
     }
   }
@@ -114,27 +119,24 @@ class SmsQueueService extends ChangeNotifier {
 
   /// Enqueue an SMS.
   ///
-  /// - If we have NO signal (airplane mode) → adds directly to queue without
-  ///   attempting a send. The OS-level SMS queue is unreliable when offline.
-  /// - If we DO have signal → attempts to send immediately. On failure,
-  ///   falls back to the persistent queue.
+  /// - Airplane mode ON  → add to persistent queue without attempting send
+  /// - Airplane mode OFF → attempt immediate send; queue on failure
   Future<void> enqueue({required String body}) async {
     final item = PendingSms(phoneNumber: _smsNumber, body: body);
 
-    // Re-check connectivity right now — state may have changed since init
-    final results = await Connectivity().checkConnectivity();
-    _hasSignal = _anySignal(results);
+    // Always re-check the actual airplane mode state right now
+    _isAirplaneMode = await _checkAirplaneMode();
+    notifyListeners();
 
-    if (!_hasSignal) {
-      // Airplane mode (or fully offline) — go straight to queue
-      debugPrint('[SmsQueue] No signal (airplane mode?) — queuing SMS: $body');
+    if (_isAirplaneMode) {
+      debugPrint('[SmsQueue] Airplane mode ON — queuing SMS: $body');
       _queue.add(item);
       await _saveQueue();
       notifyListeners();
       return;
     }
 
-    // We have signal — try to send now
+    // GSM radio is on — try to send right now
     final sent = await _trySend(item);
     if (!sent) {
       debugPrint('[SmsQueue] Send failed — queuing for retry: $body');
@@ -144,16 +146,14 @@ class SmsQueueService extends ChangeNotifier {
     }
   }
 
-  /// Manually trigger a queue flush (e.g. from a "Retry" button).
+  /// Manually flush the queue (e.g. from a "Retry" button).
   Future<void> flushQueue() async {
     if (_isFlushing || _queue.isEmpty) return;
 
-    // Check connectivity right now before flushing
-    final results = await Connectivity().checkConnectivity();
-    _hasSignal = _anySignal(results);
-
-    if (!_hasSignal) {
-      debugPrint('[SmsQueue] Flush requested but no signal — aborting');
+    _isAirplaneMode = await _checkAirplaneMode();
+    if (_isAirplaneMode) {
+      debugPrint('[SmsQueue] Flush skipped — still in airplane mode');
+      notifyListeners();
       return;
     }
 
@@ -178,15 +178,23 @@ class SmsQueueService extends ChangeNotifier {
 
   // ── Internal helpers ──────────────────────────────────────────────────────
 
-  /// True when at least one result is NOT none/bluetooth.
-  bool _anySignal(List<ConnectivityResult> results) => results.any(
-        (r) => r != ConnectivityResult.none && r != ConnectivityResult.bluetooth,
-      );
+  /// Read Settings.Global.AIRPLANE_MODE_ON via the native method channel.
+  /// Falls back to false (assume not in airplane mode) on any error so that
+  /// sending is not permanently blocked if the channel is unavailable.
+  Future<bool> _checkAirplaneMode() async {
+    try {
+      final bool isOn =
+          await _systemChannel.invokeMethod<bool>('isAirplaneModeOn') ?? false;
+      return isOn;
+    } catch (e) {
+      debugPrint('[SmsQueue] Could not check airplane mode: $e');
+      return false; // fail open — let send attempt happen
+    }
+  }
 
   /// Attempt to physically send one SMS via BackgroundSms.
   Future<bool> _trySend(PendingSms item) async {
     try {
-      // Ensure SMS permission
       var status = await Permission.sms.status;
       if (!status.isGranted) status = await Permission.sms.request();
       if (!status.isGranted) {
@@ -199,13 +207,11 @@ class SmsQueueService extends ChangeNotifier {
         message: item.body,
       );
 
-      // NOTE: result == SmsStatus.sent does NOT mean delivered when offline.
-      // We only reach here when _hasSignal == true, so we can trust the result.
       if (result == SmsStatus.sent) {
         debugPrint('[SmsQueue] SMS sent ✓ → ${item.body}');
         return true;
       } else {
-        debugPrint('[SmsQueue] SMS send returned non-sent status: $result');
+        debugPrint('[SmsQueue] SMS send returned: $result for: ${item.body}');
         return false;
       }
     } catch (e) {
