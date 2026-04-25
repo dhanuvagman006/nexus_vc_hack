@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'pin_verification_screen.dart';
+import 'payment_screen.dart';
 import 'state/app_state.dart';
 import 'l10n/app_localizations.dart';
 
@@ -74,7 +74,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PinVerificationScreen(
+                      builder: (context) => PaymentScreen(
                         endpointId: connId,
                         receiverPhone: code, // code is receiver's phone number from QR
                       ),
@@ -120,6 +120,16 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.scanQrCode),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on),
+            onPressed: () => cameraController.toggleTorch(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.flip_camera_ios),
+            onPressed: () => cameraController.switchCamera(),
+          ),
+        ],
       ),
       body: Stack(
         children: [

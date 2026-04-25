@@ -6,7 +6,6 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:provider/provider.dart';
 import 'state/app_state.dart';
 import 'services/sms_queue_service.dart';
-import 'services/encryption_service.dart';
 import 'success_animation.dart';
 import 'l10n/app_localizations.dart';
 
@@ -49,12 +48,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'senderName': appState.currentUserName,
       };
 
-      // Encrypt and send to the directly connected receiver using Nearby Connections
-      final String jsonPayload = json.encode(data);
-      final String encryptedNearbyPayload = CryptoService.encryptJson(jsonPayload);
+      // Send to the directly connected receiver using Nearby Connections
       Nearby().sendBytesPayload(
         widget.endpointId,
-        Uint8List.fromList(utf8.encode(encryptedNearbyPayload)),
+        Uint8List.fromList(utf8.encode(json.encode(data))),
       );
 
       // Local State Deduction
@@ -62,11 +59,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // Enqueue SMS — sent immediately if online, persisted if offline
       final String txnId = 'TXN${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';
-      final String rawSmsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","senderName":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverPhone.trim()}","amount":$amount}';
-      
-      // Encrypt the SMS payload so no raw JSON is sent over SMS
-      final String encryptedSmsBody = CryptoService.encryptJson(rawSmsBody);
-      await SmsQueueService.instance.enqueue(body: encryptedSmsBody);
+      final String smsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","senderName":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverPhone.trim()}","amount":$amount}';
+      await SmsQueueService.instance.enqueue(body: smsBody);
 
       // Dialog & Return
       if (mounted) {

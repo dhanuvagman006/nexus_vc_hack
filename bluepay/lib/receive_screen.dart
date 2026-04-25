@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'state/app_state.dart';
 import 'success_animation.dart';
-import 'services/encryption_service.dart';
 import 'l10n/app_localizations.dart';
 
 class ReceiveScreen extends StatefulWidget {
@@ -90,11 +89,10 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     }
   }
 
-  void _handleIncomingPayment(String encryptedPayload) {
+  void _handleIncomingPayment(String jsonString) {
     if (!mounted) return;
     try {
-      final String decryptedJsonString = CryptoService.decryptJson(encryptedPayload);
-      final decoded = json.decode(decryptedJsonString);
+      final decoded = json.decode(jsonString);
       final double? amount = double.tryParse(decoded['amount']?.toString() ?? '');
       final String senderPhone = decoded['senderPhone'] ?? decoded['senderName'] ?? 'Unknown';
 
