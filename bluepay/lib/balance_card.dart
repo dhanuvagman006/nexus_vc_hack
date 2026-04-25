@@ -102,22 +102,8 @@ class _BalanceCardState extends State<BalanceCard> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
+        color: const Color(0xFF222232),
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2A2A2A), // Dark grey
-            Color(0xFF121212), // Almost black
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,8 +169,8 @@ class _BalanceCardState extends State<BalanceCard> {
                     ? '₹${appState.balance.toStringAsFixed(2)}'
                     : '₹••••••••',
                 style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
               );
@@ -219,7 +205,7 @@ class _BalanceCardState extends State<BalanceCard> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: const Color(0xFF333342),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -228,7 +214,7 @@ class _BalanceCardState extends State<BalanceCard> {
                       Icon(
                         _isBalanceVisible
                             ? Icons.visibility_off_outlined
-                            : Icons.lock_open_outlined,
+                            : Icons.visibility_outlined,
                         color: Colors.white,
                         size: 18,
                       ),
@@ -236,7 +222,7 @@ class _BalanceCardState extends State<BalanceCard> {
                       Text(
                         _isBalanceVisible
                             ? 'Hide balance'
-                            : 'Reveal the balance',
+                            : 'Show balance',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,

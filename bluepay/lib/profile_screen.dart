@@ -129,32 +129,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(4),
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
+                color: const Color(0xFF75B9FB),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white24, width: 2),
+                border: Border.all(color: Colors.white, width: 3),
               ),
-              child: CircleAvatar(
-                radius: 46,
-                backgroundColor: const Color(0xFF75B9FB),
+              child: Center(
                 child: Text(
                   appState.currentUserName.isNotEmpty
                       ? appState.currentUserName[0].toUpperCase()
-                      : '?',
+                      : 'U',
                   style: const TextStyle(
                     fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              appState.currentUserName,
+              appState.currentUserName.isNotEmpty ? appState.currentUserName : 'User',
               style: const TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 color: Colors.white,
               ),
             ),
@@ -207,34 +207,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDestructive ? const Color(0xFFE53935) : Colors.black,
+            width: 1.5,
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isDestructive ? Colors.redAccent : Colors.black87),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isDestructive
+                    ? const Color(0xFFFFEBEE)
+                    : const Color(0xFFE0E0E0),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isDestructive ? const Color(0xFFE53935) : Colors.black,
+                  width: 1.5,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: isDestructive ? const Color(0xFFE53935) : Colors.black,
+                size: 20,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDestructive ? Colors.redAccent : Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: isDestructive ? const Color(0xFFE53935) : Colors.black,
                 ),
               ),
             ),
             if (!isDestructive)
-              const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+              const Icon(Icons.arrow_forward_ios, color: Colors.black54, size: 16),
           ],
         ),
       ),
