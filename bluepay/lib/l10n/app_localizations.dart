@@ -107,9 +107,9 @@ class AppLocalizations {
       'pendingSms': 'SMS',
       'sendingNow': 'sending now...',
       'queuedWaitingForGsm': 'queued · waiting for GSM signal',
-      'hintDialpad': 'Enter a mobile number manually to send money via USSD/SMS fallback if offline.',
+      'hintDialpad': 'Use pattern *#amount#phonenumber# to send money via USSD/SMS fallback if offline.',
       'clear': 'Clear',
-      'enterNumber': 'Enter number',
+      'enterNumber': '*#amount#phonenumber#',
     },
     'hi': {
       'home': 'होम',
