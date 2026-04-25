@@ -8,12 +8,10 @@ class AppLocalizations {
   AppLocalizations(this.locale);
 
   static AppLocalizations of(BuildContext context) {
-    // Watch AppState for locale changes
     final locale = context.watch<AppState>().locale;
     return AppLocalizations(locale);
   }
 
-  // Helper extension on BuildContext will make it context.l10n.stringKey
   
   String get home => _localizedValues[locale]?['home'] ?? _localizedValues['en']!['home']!;
   String get dialpad => _localizedValues[locale]?['dialpad'] ?? _localizedValues['en']!['dialpad']!;

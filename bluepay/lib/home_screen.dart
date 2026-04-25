@@ -364,8 +364,8 @@ class HomeDashboard extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, appState, child) {
         if (appState.transactions.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32.0),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32.0),
             child: Center(
               child: Text(
                 context.l10n.noTransactionsYet,
@@ -621,8 +621,8 @@ class _DialpadScreenState extends State<DialpadScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.info_outline,
                       size: 16,
                       color: Colors.blueAccent,
