@@ -15,7 +15,10 @@ class QRScannerScreen extends StatefulWidget {
   State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
-class _QRScannerScreenState extends State<QRScannerScreen> {
+class _QRScannerScreenState extends State<QRScannerScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
   final MobileScannerController cameraController = MobileScannerController();
   final Strategy strategy = Strategy.P2P_CLUSTER;
 
@@ -27,6 +30,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   void initState() {
     super.initState();
     _requestPermissions();
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController);
+    _animationController.repeat(reverse: true);
   }
 
   Future<void> _requestPermissions() async {
@@ -147,16 +157,28 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               }
             },
           ),
-          Center(
-            child: SizedBox(
-              width: 250,
-              height: 250,
+          // Darkened Overlay with cutout
+          Positioned.fill(
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.5),
+                BlendMode.srcOut,
+              ),
               child: Stack(
                 children: [
-                   Positioned.fill(
-                    child: CustomPaint(
-                      painter: CornerBracketPainter(
-                        color: scannedCode != null ? Colors.green : Colors.white
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                      backgroundBlendMode: BlendMode.dstOut,
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ),
@@ -164,6 +186,51 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               ),
             ),
           ),
+          
+          Center(
+            child: SizedBox(
+              width: 250,
+              height: 250,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: CornerBracketPainter(
+                        color: scannedCode != null ? Colors.green : Colors.white
+                      ),
+                    ),
+                  ),
+                  // Scanning line animation
+                  AnimatedBuilder(
+                    animation: _animation,
+                    builder: (context, child) {
+                      return Positioned(
+                        top: _animation.value * 250,
+                        left: 10,
+                        right: 10,
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.greenAccent.withOpacity(0.8),
+                                blurRadius: 4,
+                                spreadRadius: 2,
+                              )
+                            ],
+                            gradient: const LinearGradient(
+                              colors: [Colors.transparent, Colors.greenAccent, Colors.transparent],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -227,6 +294,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   @override
   void dispose() {
     try { Nearby().stopDiscovery(); } catch (_) {}
+    _animationController.dispose();
     cameraController.dispose();
     super.dispose();
   }
