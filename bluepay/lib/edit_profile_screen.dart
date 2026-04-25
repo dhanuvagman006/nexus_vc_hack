@@ -32,11 +32,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _saveProfile() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Name cannot be empty'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
     final appState = Provider.of<AppState>(context, listen: false);
     appState.saveProfileData(
-      name: _nameController.text,
-      email: _emailController.text,
-      phone: _phoneController.text,
+      name: name,
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim(),
     );
     Navigator.pop(context);
   }

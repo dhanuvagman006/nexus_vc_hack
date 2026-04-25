@@ -51,11 +51,11 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     final appState = Provider.of<AppState>(context, listen: false);
     try {
       bool? isAdv = await Nearby().startAdvertising(
-        appState.myEndpointId, // Changed to myEndpointId which matches the QR code
+        appState.currentUserName, // Advertise with real name so sender can display it
         strategy,
         onConnectionInitiated: (String id, ConnectionInfo info) {
+          if (!mounted) return;
           setState(() => connectionStatus = 'Connection requested from ${info.endpointName}...');
-          // Auto accept connection for local P2P prototype validation
           Nearby().acceptConnection(
             id,
             onPayLoadRecieved: (String endpointId, Payload payload) {
@@ -68,6 +68,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
           );
         },
         onConnectionResult: (String id, Status status) {
+          if (!mounted) return;
           if (status == Status.CONNECTED) {
             setState(() => connectionStatus = 'Connected securely! Waiting for funds...');
           }
@@ -117,7 +118,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myEndpointId = Provider.of<AppState>(context, listen: false).myEndpointId;
+    final myName = Provider.of<AppState>(context, listen: false).currentUserName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Receive Money Offline')),
@@ -129,7 +130,16 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
               'Show this QR to the sender',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 8),
+            Text(
+              myName,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Colors.blueAccent,
+              ),
+            ),
+            const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -144,18 +154,24 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
                 ],
               ),
               child: QrImageView(
-                data: myEndpointId, // Broadcast our internal ID payload for pairing
+                data: myName,
                 version: QrVersions.auto,
-                size: 250.0,
+                size: 230.0,
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
             Text(
               connectionStatus,
-              style: const TextStyle(fontSize: 16, color: Colors.blueAccent),
+              style: const TextStyle(fontSize: 15, color: Colors.blueAccent),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
-            if (!isAdvertising) const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            if (!isAdvertising)
+              Column(children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 8),
+                Text('Starting Bluetooth...', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+              ]),
           ],
         ),
       ),
