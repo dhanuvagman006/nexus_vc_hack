@@ -19,8 +19,11 @@ class RadarService extends ChangeNotifier {
   int _nearbyCount = 0;
   int get nearbyCount => _nearbyCount;
 
+  List<String> _foundUsers = [];
+  List<String> get foundUsers => _foundUsers;
+
   // ── Private internals ─────────────────────────────────────────────────────
-  final Set<String> _foundEndpoints = {};
+  final Map<String, String> _foundEndpoints = {};
   Timer? _scanTimer;        // 5-second window timer
   Timer? _periodicTimer;    // 30-second auto-rescan timer
 
@@ -53,7 +56,7 @@ class RadarService extends ChangeNotifier {
         'radar',                       // userName — not used for connections
         _strategy,
         onEndpointFound: (String id, String endpointName, String serviceId) {
-          _foundEndpoints.add(id);
+          _foundEndpoints[id] = endpointName;
         },
         onEndpointLost: (String? id) {
           if (id != null) _foundEndpoints.remove(id);
@@ -68,7 +71,7 @@ class RadarService extends ChangeNotifier {
           'radar',
           _strategy,
           onEndpointFound: (String id, String endpointName, String serviceId) {
-            _foundEndpoints.add(id);
+            _foundEndpoints[id] = endpointName;
           },
           onEndpointLost: (String? id) {
             if (id != null) _foundEndpoints.remove(id);
@@ -92,6 +95,7 @@ class RadarService extends ChangeNotifier {
       } catch (_) {}
 
       _nearbyCount = _foundEndpoints.length;
+      _foundUsers = _foundEndpoints.values.toList();
       _state = _nearbyCount > 0 ? RadarState.found : RadarState.notFound;
       notifyListeners();
     });

@@ -8,6 +8,8 @@ import 'balance_card.dart';
 import 'services/sms_queue_service.dart';
 import 'services/radar_service.dart';
 import 'l10n/app_localizations.dart';
+import 'package:nearby_connections/nearby_connections.dart';
+import 'pin_verification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -452,6 +454,91 @@ class _RadarScanScreenState extends State<_RadarScanScreen>
     super.dispose();
   }
 
+  Future<void> _connectToUser(String targetName) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final radar = Provider.of<RadarService>(context, listen: false);
+
+    // Stop radar auto-scan to avoid conflicts
+    radar.stopAutoScan();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Expanded(child: Text('Connecting to $targetName...')),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      bool? isDiscovering = await Nearby().startDiscovery(
+        appState.currentUserName,
+        Strategy.P2P_CLUSTER,
+        onEndpointFound: (String id, String endpointName, String serviceId) {
+          if (endpointName == targetName) {
+            Nearby().stopDiscovery();
+            Nearby().requestConnection(
+              appState.currentUserName,
+              id,
+              onConnectionInitiated: (String connId, ConnectionInfo info) {
+                Nearby().acceptConnection(
+                  connId,
+                  onPayLoadRecieved: (String endId, Payload payload) {},
+                  onPayloadTransferUpdate: (String endId, PayloadTransferUpdate update) {},
+                );
+              },
+              onConnectionResult: (String connId, Status status) {
+                if (status == Status.CONNECTED) {
+                  Navigator.pop(context); // Dismiss dialog
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PinVerificationScreen(
+                        endpointId: connId,
+                        receiverPhone: targetName,
+                        receiverName: targetName,
+                      ),
+                    ),
+                  ).then((_) {
+                    radar.startAutoScan(); // Resume radar scan when returning
+                  });
+                } else {
+                  if (mounted) {
+                    Navigator.pop(context); // Dismiss dialog
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Connection Failed')));
+                    radar.startAutoScan();
+                  }
+                }
+              },
+              onDisconnected: (String id) {},
+            );
+          }
+        },
+        onEndpointLost: (String? id) {},
+        serviceId: "com.example.bluepay",
+      );
+
+      if (!(isDiscovering ?? false)) {
+        if (mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Discovery failed')));
+          radar.startAutoScan();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        radar.startAutoScan();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<RadarService>(
@@ -553,38 +640,16 @@ class _RadarScanScreenState extends State<_RadarScanScreen>
                     )
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildFooterAction(
-                        title: context.l10n.sendMoney,
-                        icon: Icons.qr_code_scanner,
-                        color: Colors.amber,
-                        onTap: () {
-                           Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const QRScannerScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildFooterAction(
-                        title: context.l10n.receiveMoney,
-                        icon: Icons.qr_code_2,
-                        color: Colors.green,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const ReceiveScreen()),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                child: _buildFooterAction(
+                  title: 'Share my presence',
+                  icon: Icons.cell_tower,
+                  color: Colors.green,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ReceiveScreen()),
+                    );
+                  },
                 ),
               ),
             ],
@@ -620,14 +685,35 @@ class _RadarScanScreenState extends State<_RadarScanScreen>
           Text(
             '${radar.nearbyCount} Users Found!',
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.green,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: radar.foundUsers.map((name) {
+              return ActionChip(
+                avatar: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: Colors.green, size: 16),
+                ),
+                label: Text(
+                  name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                backgroundColor: Colors.green.withValues(alpha: 0.1),
+                side: const BorderSide(color: Colors.green),
+                onPressed: () => _connectToUser(name),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
           const Text(
-            'Tap Send Money below to scan their QR code.',
+            'Tap a user to connect and send money securely.',
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
         ],
