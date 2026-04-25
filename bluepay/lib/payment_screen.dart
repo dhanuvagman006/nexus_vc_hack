@@ -62,7 +62,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
       appState.sendMoney(amount, widget.receiverPhone, txnId: txnId);
 
       // Enqueue SMS — sent immediately if online, persisted if offline
-      final String smsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","senderName":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverPhone.trim()}","amount":$amount}';
+      final String smsBody = json.encode({
+        "txn_id": txnId,
+        "senderId": appState.userPhone.trim(),
+        "senderName": appState.currentUserName.trim(),
+        "receiverId": widget.receiverPhone.trim(),
+        "receiverName": widget.receiverName.trim(),
+        "amount": amount
+      });
       await SmsQueueService.instance.enqueue(body: smsBody);
 
       // Dialog & Return

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nearby_connections/nearby_connections.dart';
@@ -45,6 +46,17 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       connectionStatus = 'Scanning nearby networks for $code...';
     });
 
+    // Attempt to parse metadata (ID+Name) from JSON QR, or fallback to raw ID
+    String targetId = code;
+    String targetName = '';
+    try {
+      final decoded = json.decode(code);
+      targetId = decoded['phone'] ?? decoded['id'] ?? code;
+      targetName = decoded['name'] ?? '';
+    } catch (_) {
+      // Legacy QR: just a raw phone number
+    }
+
     final appState = Provider.of<AppState>(context, listen: false);
 
     try {
@@ -52,7 +64,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         appState.currentUserName, // our name
         strategy,
         onEndpointFound: (String id, String endpointName, String serviceId) {
-          if (endpointName == code) {
+          if (endpointName == targetId) {
             // Found the receiver we scanned!
             setState(() => connectionStatus = 'Receiver found. Negotiating connection...');
             Nearby().stopDiscovery();
@@ -76,7 +88,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     MaterialPageRoute(
                       builder: (context) => PaymentScreen(
                         endpointId: connId,
-                        receiverPhone: code, // code is receiver's phone number from QR
+                        receiverPhone: targetId,
+                        receiverName: targetName,
                       ),
                     ),
                   );

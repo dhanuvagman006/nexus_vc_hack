@@ -79,7 +79,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
         serviceId: "com.example.bluepay",
       );
 
-      if (isAdv ?? false) {
+      if (isAdv) {
         setState(() => isAdvertising = true);
       }
     } catch (e) {
@@ -114,7 +114,15 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
         // 3. Redundant SMS Queue — if receiver gets signal first, bank is notified
         if (txnId != null) {
           final String myPhone = appState.userPhone.trim();
-          final String smsBody = '{"txn_id":"$txnId","senderId":"${senderId.trim()}","senderName":"${senderName.trim()}","receiverId":"$myPhone","amount":$amount}';
+          final String myName = appState.currentUserName.trim();
+          final String smsBody = json.encode({
+            "txn_id": txnId,
+            "senderId": senderId.trim(),
+            "senderName": senderName.trim(),
+            "receiverId": myPhone,
+            "receiverName": myName,
+            "amount": amount
+          });
           await SmsQueueService.instance.enqueue(body: smsBody);
         }
 
@@ -174,7 +182,10 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
                 ],
               ),
               child: QrImageView(
-                data: myPhone,
+                data: json.encode({
+                  'phone': appState.userPhone.isNotEmpty ? appState.userPhone : appState.currentUserName,
+                  'name': appState.currentUserName,
+                }),
                 version: QrVersions.auto,
                 size: 230.0,
               ),

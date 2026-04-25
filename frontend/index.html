@@ -385,7 +385,7 @@
     list.innerHTML = sorted.map(t => {
       const isSent = forUserId ? t.senderId === forUserId : false;
       const statusCls = isSent ? 'sent' : 'received';
-      const statusText = isSent ? 'Rejected' : 'Approved'; 
+      const statusText = 'Approved'; 
       const sign = isSent ? '-' : '+';
       const peer = isSent ? t.receiverName : t.senderName;
       const label = forUserId

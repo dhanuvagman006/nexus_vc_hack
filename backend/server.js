@@ -32,9 +32,13 @@ function log(action, details, result) {
 // ─── Auto-create or fetch user ────────────────────────────────────────────────
 function getOrCreateUser(userId, displayName) {
   if (!users[userId]) {
+    // If displayName is missing or is just the userId, fallback to "Trader" or "BluePay User"
+    // as per user request to avoid numbers-as-names.
+    let name = (displayName && displayName !== userId) ? displayName : 'Trader';
+    
     users[userId] = {
       userId,
-      name: displayName || userId,
+      name,
       balance: 1000.00,
       createdAt: new Date().toISOString(),
     };
