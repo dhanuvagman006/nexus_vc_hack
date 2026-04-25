@@ -454,12 +454,28 @@ class _DialpadScreenState extends State<DialpadScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Colors.black, width: 1.5),
+        ),
+        backgroundColor: Colors.white,
         title: Row(
-          children: const [
-            Icon(Icons.send_to_mobile, color: Colors.blueAccent),
-            SizedBox(width: 8),
-            Text('Confirm Payment'),
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE0E0E0),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 1.5),
+              ),
+              child: const Icon(Icons.send_to_mobile, color: Colors.black, size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Confirm Payment',
+              style: TextStyle(fontWeight: FontWeight.w800, color: Colors.black),
+            ),
           ],
         ),
         content: Column(
@@ -475,12 +491,13 @@ class _DialpadScreenState extends State<DialpadScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black26, width: 1),
               ),
               child: const Text(
                 'Transaction will be sent via GSM SMS to the backend.',
-                style: TextStyle(fontSize: 12, color: Colors.blueAccent),
+                style: TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ),
           ],
@@ -491,20 +508,20 @@ class _DialpadScreenState extends State<DialpadScreen> {
               Navigator.pop(ctx);
               _onClear();
             },
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: const Text('Cancel', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
+              backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
               await _processUssdPayment(amount, receiverPhone, appState);
             },
-            child: const Text('Send', style: TextStyle(color: Colors.white)),
+            child: const Text('Send', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -559,12 +576,12 @@ class _DialpadScreenState extends State<DialpadScreen> {
       children: [
         Text(
           '$label: ',
-          style: const TextStyle(color: Colors.grey, fontSize: 13),
+          style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500),
         ),
         Flexible(
           child: Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Colors.black),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -577,15 +594,15 @@ class _DialpadScreenState extends State<DialpadScreen> {
       child: Container(
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
+            bottom: BorderSide(color: Colors.black12, width: 1),
           ),
         ),
         child: Row(
           children: [
             _buildFlatKey(labels[0]),
-            Container(width: 1, color: const Color(0xFFEEEEEE)),
+            Container(width: 1, color: Colors.black12),
             _buildFlatKey(labels[1]),
-            Container(width: 1, color: const Color(0xFFEEEEEE)),
+            Container(width: 1, color: Colors.black12),
             _buildFlatKey(labels[2]),
           ],
         ),
@@ -602,8 +619,8 @@ class _DialpadScreenState extends State<DialpadScreen> {
             label,
             style: const TextStyle(
               fontSize: 34,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
             ),
           ),
         ),
@@ -629,23 +646,34 @@ class _DialpadScreenState extends State<DialpadScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.black, width: 1.5),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      size: 16,
-                      color: Colors.blueAccent,
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0E0E0),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black, width: 1.5),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline,
+                        size: 14,
+                        color: Colors.black,
+                      ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Flexible(
                       child: Text(
                         context.l10n.hintDialpad,
                         style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blueAccent,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
@@ -660,13 +688,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+                border: Border.all(color: Colors.black, width: 1.5),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -686,10 +708,10 @@ class _DialpadScreenState extends State<DialpadScreen> {
                             _input.isEmpty ? context.l10n.enterNumber : _input,
                             style: TextStyle(
                               fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w800,
                               color: _input.isEmpty
                                   ? Colors.grey[400]
-                                  : Colors.black87,
+                                  : Colors.black,
                               letterSpacing: 2,
                             ),
                             textAlign: TextAlign.center,
@@ -705,7 +727,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
                               padding: EdgeInsets.only(left: 8),
                               child: Icon(
                                 Icons.backspace_outlined,
-                                color: Colors.black54,
+                                color: Colors.black,
                                 size: 24,
                               ),
                             ),
@@ -715,7 +737,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
                       ],
                     ),
                   ),
-                  Container(height: 1, color: const Color(0xFFEEEEEE)),
+                  Container(height: 1.5, color: Colors.black),
                   // ── Keys grid ─────────────────────────────────────────────
                   SizedBox(
                     height: 380, // Increased size of keys

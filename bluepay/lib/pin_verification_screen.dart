@@ -5,11 +5,13 @@ import 'payment_screen.dart';
 class PinVerificationScreen extends StatefulWidget {
   final String endpointId;
   final String receiverPhone;
+  final String receiverName;
 
   const PinVerificationScreen({
     super.key,
     required this.endpointId,
     required this.receiverPhone,
+    this.receiverName = '',
   });
 
   @override
@@ -54,6 +56,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
             builder: (context) => PaymentScreen(
               endpointId: widget.endpointId,
               receiverPhone: widget.receiverPhone,
+              receiverName: widget.receiverName,
             ),
           ),
         );

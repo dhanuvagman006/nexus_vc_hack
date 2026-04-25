@@ -53,7 +53,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const AddressManagementScreen(),
+                              builder: (context) =>
+                                  const AddressManagementScreen(),
                             ),
                           );
                         },
@@ -89,12 +90,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDarkHeader(AppState appState) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF222232),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 2, 136, 13),
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
         ),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: SafeArea(
         bottom: false,
@@ -132,9 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: const Color(0xFF75B9FB),
+                color: const Color(0xFF81C784),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(color: Colors.black, width: 3),
               ),
               child: Center(
                 child: Text(
@@ -151,7 +153,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              appState.currentUserName.isNotEmpty ? appState.currentUserName : 'User',
+              appState.currentUserName.isNotEmpty
+                  ? appState.currentUserName
+                  : 'User',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -168,7 +172,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.phone_outlined, size: 16, color: Colors.white70),
+                  const Icon(
+                    Icons.phone_outlined,
+                    size: 16,
+                    color: Colors.white70,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     appState.userPhone,
@@ -249,7 +257,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             if (!isDestructive)
-              const Icon(Icons.arrow_forward_ios, color: Colors.black54, size: 16),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.black54,
+                size: 16,
+              ),
           ],
         ),
       ),
