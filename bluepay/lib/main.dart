@@ -116,13 +116,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.blue,
-      body: Center(
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF4FC3F7), Color(0xFF1565C0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/logo/logo.jpg',
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
               'BluePay',
               style: TextStyle(
                 fontSize: 42,
@@ -131,8 +148,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 letterSpacing: 1.5,
               ),
             ),
-            SizedBox(height: 8),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               'Offline Rural Payments',
               style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
