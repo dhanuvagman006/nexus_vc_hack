@@ -162,6 +162,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               appState.userEmail,
               style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
+            if (appState.userPhone.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.phone_outlined, size: 16, color: Colors.white70),
+                  const SizedBox(width: 6),
+                  Text(
+                    appState.userPhone,
+                    style: const TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ],
             if (appState.userAddress.isNotEmpty) ...[
               const SizedBox(height: 8),
               Padding(
