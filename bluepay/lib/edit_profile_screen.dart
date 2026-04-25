@@ -60,7 +60,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: const Color(0xFF222232),
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
