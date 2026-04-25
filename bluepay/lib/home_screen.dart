@@ -252,27 +252,7 @@ class HomeDashboard extends StatelessWidget {
               appState.currentUserName.isNotEmpty ? appState.currentUserName : 'User',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black),
             ),
-            const Spacer(),
-            Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none_outlined, size: 28, color: Colors.black),
-                  onPressed: () {},
-                ),
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+
           ],
         );
       },
