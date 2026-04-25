@@ -57,6 +57,9 @@ class AppLocalizations {
   String get alignQrInsideFrame => _localizedValues[locale]?['alignQrInsideFrame'] ?? _localizedValues['en']!['alignQrInsideFrame']!;
 
   String get editProfile => _localizedValues[locale]?['editProfile'] ?? _localizedValues['en']!['editProfile']!;
+  String get addressManagement => _localizedValues[locale]?['addressManagement'] ?? _localizedValues['en']!['addressManagement']!;
+  String get helpAndSupport => _localizedValues[locale]?['helpAndSupport'] ?? _localizedValues['en']!['helpAndSupport']!;
+  String get logout => _localizedValues[locale]?['logout'] ?? _localizedValues['en']!['logout']!;
   String get save => _localizedValues[locale]?['save'] ?? _localizedValues['en']!['save']!;
   String get pendingSms => _localizedValues[locale]?['pendingSms'] ?? _localizedValues['en']!['pendingSms']!;
   String get sendingNow => _localizedValues[locale]?['sendingNow'] ?? _localizedValues['en']!['sendingNow']!;
@@ -103,6 +106,9 @@ class AppLocalizations {
       'scanQrCode': 'Scan QR Code',
       'alignQrInsideFrame': 'Align QR code inside the frame to scan.',
       'editProfile': 'Edit Profile',
+      'addressManagement': 'Address Management',
+      'helpAndSupport': 'Help & Support',
+      'logout': 'Log out',
       'save': 'Save',
       'pendingSms': 'SMS',
       'sendingNow': 'sending now...',
@@ -148,6 +154,9 @@ class AppLocalizations {
       'scanQrCode': 'क्यूआर कोड स्कैन करें',
       'alignQrInsideFrame': 'स्कैन करने के लिए क्यूआर कोड को फ्रेम के अंदर संरेखित करें।',
       'editProfile': 'प्रोफाइल संपादित करें',
+      'addressManagement': 'पता प्रबंधन',
+      'helpAndSupport': 'सहायता और समर्थन',
+      'logout': 'लॉग आउट',
       'save': 'सहेजें',
       'pendingSms': 'एसएमएस',
       'sendingNow': 'अभी भेज रहा है...',
@@ -193,6 +202,9 @@ class AppLocalizations {
       'scanQrCode': 'ಕ್ಯೂಆರ್ ಕೋಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಿ',
       'alignQrInsideFrame': 'ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಫ್ರೇಮ್ ಒಳಗೆ ಕ್ಯೂಆರ್ ಕೋಡ್ ಅನ್ನು ಹೊಂದಿಸಿ.',
       'editProfile': 'ಪ್ರೊಫೈಲ್ ಸಂಪಾದಿಸಿ',
+      'addressManagement': 'ವಿಳಾಸ ನಿರ್ವಹಣೆ',
+      'helpAndSupport': 'ಸಹಾಯ ಮತ್ತು ಬೆಂಬಲ',
+      'logout': 'ಲಾಗ್ ಔಟ್',
       'save': 'ಉಳಿಸಿ',
       'pendingSms': 'ಎಸ್‌ಎಂಎಸ್',
       'sendingNow': 'ಈಗ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...',

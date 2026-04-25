@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       _buildOptionItem(
                         icon: Icons.location_on_outlined,
-                        title: 'Address Management',
+                        title: context.l10n.addressManagement,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -61,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       _buildOptionItem(
                         icon: Icons.headset_mic_outlined,
-                        title: 'Help & Support',
+                        title: context.l10n.helpAndSupport,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       _buildOptionItem(
                         icon: Icons.logout,
-                        title: 'Log out',
+                        title: context.l10n.logout,
                         isDestructive: true,
                       ),
                     ],
