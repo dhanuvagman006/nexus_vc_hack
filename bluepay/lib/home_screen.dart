@@ -73,16 +73,20 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        return BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          type: BottomNavigationBarType.fixed,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.blueAccent,
-          unselectedItemColor: Colors.grey,
-          elevation: 20,
+        return Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.black, width: 1.5)),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            type: BottomNavigationBarType.fixed,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            backgroundColor: Colors.white,
+            selectedItemColor: Colors.black,
+            unselectedItemColor: Colors.black54,
+            elevation: 0,
           items: [
             BottomNavigationBarItem(
               icon: const Icon(Icons.home, size: 28),
@@ -98,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
               label: context.l10n.history,
             ),
           ],
+          ),
         );
       },
     );
@@ -220,30 +225,38 @@ class HomeDashboard extends StatelessWidget {
                   ),
                 );
               },
-              child: CircleAvatar(
-                radius: 20,
-                backgroundColor: const Color(0xFF75B9FB),
-                child: Text(
-                  appState.currentUserName.isNotEmpty
-                      ? appState.currentUserName[0].toUpperCase()
-                      : '?',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF75B9FB),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 1.5),
+                ),
+                child: Center(
+                  child: Text(
+                    appState.currentUserName.isNotEmpty
+                        ? appState.currentUserName[0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              appState.currentUserName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              appState.currentUserName.isNotEmpty ? appState.currentUserName : 'User',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black),
             ),
             const Spacer(),
             Stack(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_none_outlined, size: 28),
+                  icon: const Icon(Icons.notifications_none_outlined, size: 28, color: Colors.black),
                   onPressed: () {},
                 ),
                 Positioned(
@@ -327,32 +340,31 @@ class HomeDashboard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          border: Border.all(color: Colors.black, width: 1.5),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: iconColor.withOpacity(0.2),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 1.5),
               ),
-              child: Icon(icon, color: Colors.black87),
+              child: Icon(icon, color: Colors.black, size: 24),
             ),
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                color: Colors.black,
+              ),
             ),
           ],
         ),
@@ -1360,23 +1372,22 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.black, width: 1.5),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.grey[200],
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0E0E0),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1.5),
+            ),
             child: const Icon(Icons.person, color: Colors.blueAccent),
           ),
           const SizedBox(width: 16),
@@ -1388,13 +1399,18 @@ class TransactionItem extends StatelessWidget {
                   name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
+                    color: Colors.black,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   date,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                  style: const TextStyle(
+                    color: Color(0xFF757575),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -1402,9 +1418,9 @@ class TransactionItem extends StatelessWidget {
           Text(
             amount,
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
               fontSize: 16,
-              color: isPositive ? Colors.green : Colors.redAccent,
+              color: isPositive ? Colors.green : const Color(0xFFE53935),
             ),
           ),
         ],
