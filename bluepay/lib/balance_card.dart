@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'state/app_state.dart';
 
 class BalanceCard extends StatefulWidget {
@@ -11,42 +12,29 @@ class BalanceCard extends StatefulWidget {
 
 class _BalanceCardState extends State<BalanceCard> {
   bool _isBalanceVisible = false;
-  final TextEditingController _pinController = TextEditingController();
 
-  void _checkPin() {
-    if (_pinController.text == '1234') {
-      setState(() {
-        _isBalanceVisible = true;
-      });
-      _pinController.clear();
-      Navigator.pop(context); // close dialog
-    } else {
-      // show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect code'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    }
-  }
-
+  /// Shows PIN dialog. On correct PIN, reveals balance.
   void _showPinDialog() {
+    final pinController = TextEditingController();
+
     showDialog(
       context: context,
-      builder: (context) {
+      barrierDismissible: false,
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: const Text('Enter Passcode'),
+          title: const Text('Enter PIN'),
           content: TextField(
-            controller: _pinController,
+            controller: pinController,
             keyboardType: TextInputType.number,
             obscureText: true,
             autofocus: true,
+            maxLength: 4,
             decoration: const InputDecoration(
-              hintText: 'Enter 4-digit code',
+              counterText: '',
+              hintText: 'Enter your secure PIN',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
@@ -59,13 +47,38 @@ class _BalanceCardState extends State<BalanceCard> {
           actions: [
             TextButton(
               onPressed: () {
-                _pinController.clear();
-                Navigator.pop(context);
+                Navigator.of(dialogContext).pop();
               },
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: _checkPin,
+              onPressed: () async {
+                final enteredPin = pinController.text.trim();
+
+                // Read PIN directly from SharedPreferences (ground truth)
+                final prefs = await SharedPreferences.getInstance();
+                final storedPin = (prefs.getString('userPin') ?? '').trim();
+
+                if (storedPin.isNotEmpty && enteredPin == storedPin) {
+                  // Close dialog
+                  Navigator.of(dialogContext).pop();
+                  // Reveal balance
+                  setState(() {
+                    _isBalanceVisible = true;
+                  });
+                } else {
+                  // Show error but keep dialog open
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Incorrect PIN'),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
+                  pinController.clear();
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF75B9FB),
                 shape: RoundedRectangleBorder(
@@ -81,12 +94,6 @@ class _BalanceCardState extends State<BalanceCard> {
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    _pinController.dispose();
-    super.dispose();
   }
 
   @override
@@ -124,7 +131,7 @@ class _BalanceCardState extends State<BalanceCard> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.lightGreenAccent, //.withOpacity(0.15)
+                  color: Colors.lightGreenAccent,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(

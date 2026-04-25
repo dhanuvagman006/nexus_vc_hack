@@ -39,10 +39,11 @@ class Transaction {
 
 class AppState extends ChangeNotifier {
   // ── in-memory state ──────────────────────────────────────────────────────
-  String currentUserName = 'Alexey G.';
-  String userEmail = 'alexey.g@example.com';
+  String currentUserName = '';
+  String userEmail = '';
   String userPhone = '';
   String userAddress = '';
+  String userPin = '';
   String myEndpointId = '';
 
   double balance = 1000.00;
@@ -53,6 +54,7 @@ class AppState extends ChangeNotifier {
   static const _kEmail = 'userEmail';
   static const _kPhone = 'userPhone';
   static const _kAddress = 'userAddress';
+  static const _kPin = 'userPin';
   static const _kEndpointId = 'myEndpointId';
   static const _kBalance = 'balance';
   static const _kTransactions = 'transactions';
@@ -65,10 +67,11 @@ class AppState extends ChangeNotifier {
   Future<void> _loadAll() async {
     final prefs = await SharedPreferences.getInstance();
 
-    currentUserName = prefs.getString(_kName) ?? 'Alexey G.';
-    userEmail = prefs.getString(_kEmail) ?? 'alexey.g@example.com';
+    currentUserName = prefs.getString(_kName) ?? '';
+    userEmail = prefs.getString(_kEmail) ?? '';
     userPhone = prefs.getString(_kPhone) ?? '';
     userAddress = prefs.getString(_kAddress) ?? '';
+    userPin = prefs.getString(_kPin) ?? '';
 
     // Endpoint ID: generate once and persist so it stays stable across restarts
     final savedId = prefs.getString(_kEndpointId);
@@ -104,7 +107,28 @@ class AppState extends ChangeNotifier {
     );
   }
 
-  // ── Profile ───────────────────────────────────────────────────────────────
+  // ── Profile & Registration ────────────────────────────────────────────────
+  Future<void> registerUser({
+    required String name,
+    required String email,
+    required String phone,
+    required String pin,
+  }) async {
+    currentUserName = name;
+    userEmail = email;
+    userPhone = phone;
+    userPin = pin;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kName, currentUserName);
+    await prefs.setString(_kEmail, userEmail);
+    await prefs.setString(_kPhone, userPhone);
+    await prefs.setString(_kPin, userPin);
+
+    debugPrint('[AppState] Registration complete. PIN saved: ${prefs.getString(_kPin)}');
+    notifyListeners();
+  }
+
   Future<void> saveProfileData({
     required String name,
     required String email,

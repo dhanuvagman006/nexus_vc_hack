@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
+import 'register_screen.dart';
 import 'state/app_state.dart';
 import 'services/sms_queue_service.dart';
 import 'services/sms_balance_service.dart';
@@ -89,13 +91,27 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    });
+    _checkRegistration();
+  }
+
+  Future<void> _checkRegistration() async {
+    // Artificial delay to show the splash screen
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final userPin = prefs.getString('userPin');
+    
+    if (userPin == null || userPin.isEmpty) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
   }
 
   @override
