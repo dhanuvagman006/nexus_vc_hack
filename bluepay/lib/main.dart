@@ -46,7 +46,12 @@ class _MyAppState extends State<MyApp> {
 
       // ignore: use_build_context_synchronously
       final appState = Provider.of<AppState>(context, listen: false);
-      appState.syncBalance(update.newBalance);
+      appState.syncBalance(
+        update.newBalance,
+        txnId: update.txnId,
+        amount: update.amount,
+        type: update.type,
+      );
 
       final label = update.type == 'S' ? 'Payment confirmed' : 'Money received';
       // ignore: use_build_context_synchronously

@@ -984,7 +984,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
         '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","receiverId":"$receiverPhone","amount":$amount}';
 
     // Deduct locally & record
-    appState.sendMoney(amount, receiverPhone);
+    appState.sendMoney(amount, receiverPhone, txnId: txnId);
 
     // Queue / send JSON SMS to relay phone
     await SmsQueueService.instance.enqueue(body: smsBody);
