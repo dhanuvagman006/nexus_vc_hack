@@ -148,15 +148,19 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             },
           ),
           Center(
-            child: Container(
+            child: SizedBox(
               width: 250,
               height: 250,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: scannedCode != null ? Colors.green : Colors.white,
-                  width: 4.0,
-                ),
-                borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                children: [
+                   Positioned.fill(
+                    child: CustomPaint(
+                      painter: CornerBracketPainter(
+                        color: scannedCode != null ? Colors.green : Colors.white
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -226,4 +230,38 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     cameraController.dispose();
     super.dispose();
   }
+}
+
+class CornerBracketPainter extends CustomPainter {
+  final Color color;
+  CornerBracketPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+    
+    const double len = 30;
+    
+    // Top Left
+    canvas.drawLine(const Offset(0, 0), const Offset(len, 0), paint);
+    canvas.drawLine(const Offset(0, 0), const Offset(0, len), paint);
+    
+    // Top Right
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width - len, 0), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width, len), paint);
+    
+    // Bottom Left
+    canvas.drawLine(Offset(0, size.height), Offset(len, size.height), paint);
+    canvas.drawLine(Offset(0, size.height), Offset(0, size.height - len), paint);
+    
+    // Bottom Right
+    canvas.drawLine(Offset(size.width, size.height), Offset(size.width - len, size.height), paint);
+    canvas.drawLine(Offset(size.width, size.height), Offset(size.width, size.height - len), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
