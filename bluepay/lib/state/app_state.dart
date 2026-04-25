@@ -212,9 +212,29 @@ class AppState extends ChangeNotifier {
   }
 
   /// Called when a BPAY balance-update SMS is received from the relay app.
-  /// Overwrites local balance with the server-confirmed value and persists it.
-  void syncBalance(double serverBalance) {
+  /// Overwrites local balance with the server-confirmed value and records the
+  /// transaction if it hasn't been added yet.
+  void syncBalance(double serverBalance, {String? txnId, double? amount, String? type}) {
     balance = serverBalance;
+
+    if (txnId != null && amount != null && type != null) {
+      final isDuplicate = transactions.any((t) => t.id == txnId);
+      if (!isDuplicate) {
+        transactions.insert(
+          0,
+          Transaction(
+            id: txnId,
+            counterpartName: type == 'R' ? 'Received via SMS' : 'Sent via SMS',
+            amount: amount,
+            isPositive: type == 'R',
+            date: DateTime.now(),
+          ),
+        );
+      } else {
+        debugPrint('[AppState] syncBalance: Duplicate txn ignored: $txnId');
+      }
+    }
+
     notifyListeners();
     _persistBalanceAndTransactions();
     debugPrint('[AppState] Balance synced from server: ₹$serverBalance');
