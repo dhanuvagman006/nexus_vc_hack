@@ -29,10 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       bottomNavigationBar: _buildBottomNavigationBar(),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
     );
   }
 
@@ -52,7 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 right: -6,
                 child: Container(
                   padding: const EdgeInsets.all(3),
-                  constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+                  constraints: const BoxConstraints(
+                    minWidth: 17,
+                    minHeight: 17,
+                  ),
                   decoration: const BoxDecoration(
                     color: Colors.orange,
                     shape: BoxShape.circle,
@@ -87,10 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.home, size: 28),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
-              icon: dialpadIcon,
-              label: 'Dialpad',
-            ),
+            BottomNavigationBarItem(icon: dialpadIcon, label: 'Dialpad'),
             const BottomNavigationBarItem(
               icon: Icon(Icons.account_balance_wallet_outlined, size: 28),
               label: 'Wallet',
@@ -125,7 +122,10 @@ class HomeDashboard extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF3E0),
                       borderRadius: BorderRadius.circular(14),
@@ -140,20 +140,27 @@ class HomeDashboard extends StatelessWidget {
                             color: Colors.orange,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.hourglass_top_rounded,
-                              color: Colors.white, size: 14),
+                          child: const Icon(
+                            Icons.hourglass_top_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: const TextStyle(fontSize: 13, color: Colors.black87),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black87,
+                              ),
                               children: [
                                 TextSpan(
                                   text: '${smsQ.pendingCount} SMS ',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange),
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                  ),
                                 ),
                                 TextSpan(
                                   text: smsQ.isGsmAvailable
@@ -169,7 +176,9 @@ class HomeDashboard extends StatelessWidget {
                               ? Icons.signal_cellular_alt
                               : Icons.signal_cellular_off,
                           size: 16,
-                          color: smsQ.isGsmAvailable ? Colors.green : Colors.grey,
+                          color: smsQ.isGsmAvailable
+                              ? Colors.green
+                              : Colors.grey,
                         ),
                       ],
                     ),
@@ -229,10 +238,7 @@ class HomeDashboard extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               appState.currentUserName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const Spacer(),
             Stack(
@@ -254,7 +260,7 @@ class HomeDashboard extends StatelessWidget {
                   ),
                 ),
               ],
-            )
+            ),
           ],
         );
       },
@@ -304,9 +310,7 @@ class HomeDashboard extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ReceiveScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const ReceiveScreen()),
               );
             },
           ),
@@ -333,7 +337,7 @@ class HomeDashboard extends StatelessWidget {
               color: Colors.grey.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -349,10 +353,7 @@ class HomeDashboard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
             ),
           ],
         ),
@@ -369,10 +370,7 @@ class HomeDashboard extends StatelessWidget {
             child: Center(
               child: Text(
                 'No transactions yet.',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
             ),
           );
@@ -386,8 +384,10 @@ class HomeDashboard extends StatelessWidget {
             final tx = appState.transactions[index];
             return TransactionItem(
               name: tx.counterpartName,
-              date: '${tx.date.day}/${tx.date.month}/${tx.date.year} at ${tx.date.hour}:${tx.date.minute.toString().padLeft(2, '0')}',
-              amount: '${tx.isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
+              date:
+                  '${tx.date.day}/${tx.date.month}/${tx.date.year} at ${tx.date.hour}:${tx.date.minute.toString().padLeft(2, '0')}',
+              amount:
+                  '${tx.isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
               isPositive: tx.isPositive,
             );
           },
@@ -395,8 +395,6 @@ class HomeDashboard extends StatelessWidget {
       },
     );
   }
-
-
 }
 
 // ─── Dialpad Screen ──────────────────────────────────────────────────────────
@@ -487,7 +485,9 @@ class _DialpadScreenState extends State<DialpadScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -501,7 +501,10 @@ class _DialpadScreenState extends State<DialpadScreen> {
   }
 
   Future<void> _processUssdPayment(
-      double amount, String receiverPhone, AppState appState) async {
+    double amount,
+    String receiverPhone,
+    AppState appState,
+  ) async {
     if (appState.balance < amount) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -519,7 +522,8 @@ class _DialpadScreenState extends State<DialpadScreen> {
     // and POSTs the same JSON to POST /relay on the backend.
     final txnId =
         'TXN${DateTime.now().millisecondsSinceEpoch}${(DateTime.now().microsecond % 9999).toString().padLeft(4, '0')}';
-    final smsBody = '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"$receiverPhone","amount":$amount}';
+    final smsBody =
+        '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"$receiverPhone","amount":$amount}';
 
     // Deduct locally & record
     appState.sendMoney(amount, receiverPhone);
@@ -532,7 +536,8 @@ class _DialpadScreenState extends State<DialpadScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              '₹${amount.toStringAsFixed(2)} sent to $receiverPhone via GSM'),
+            '₹${amount.toStringAsFixed(2)} sent to $receiverPhone via GSM',
+          ),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
         ),
@@ -543,42 +548,53 @@ class _DialpadScreenState extends State<DialpadScreen> {
   Widget _infoRow(String label, String value) {
     return Row(
       children: [
-        Text('$label: ',
-            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        Text(
+          '$label: ',
+          style: const TextStyle(color: Colors.grey, fontSize: 13),
+        ),
         Flexible(
-          child: Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 14),
-              overflow: TextOverflow.ellipsis),
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildKey(String label, {Color? color}) {
+  Widget _buildGridRow(List<String> labels) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          elevation: 2,
-          shadowColor: Colors.black12,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => _onKey(label),
-            child: SizedBox(
-              height: 68,
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
-                    color: color ?? const Color(0xFF1A1A2E),
-                  ),
-                ),
-              ),
+      child: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            _buildFlatKey(labels[0]),
+            Container(width: 1, color: const Color(0xFFEEEEEE)),
+            _buildFlatKey(labels[1]),
+            Container(width: 1, color: const Color(0xFFEEEEEE)),
+            _buildFlatKey(labels[2]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlatKey(String label) {
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onKey(label),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
           ),
         ),
@@ -590,138 +606,129 @@ class _DialpadScreenState extends State<DialpadScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Dialpad',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-        ),
-      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            children: [
-              // ── Hint banner ────────────────────────────────────────────
-              Container(
+        child: Column(
+          children: [
+            const SizedBox(height: 200),
+            // ── Hint banner ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: const [
-                    Icon(Icons.info_outline, size: 16, color: Colors.blueAccent),
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.blueAccent,
+                    ),
                     SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         'Type  *#amount#phonenumber#  to send money via GSM',
-                        style: TextStyle(fontSize: 12, color: Colors.blueAccent),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              // ── Display ───────────────────────────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _input.isEmpty ? 'Enter number' : _input,
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                          color: _input.isEmpty ? Colors.grey[400] : Colors.black87,
-                          letterSpacing: 2,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (_input.isNotEmpty)
-                      GestureDetector(
-                        onTap: _onBackspace,
-                        onLongPress: _onClear,
-                        child: const Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Icon(Icons.backspace_outlined,
-                              color: Colors.redAccent, size: 24),
+                          fontSize: 12,
+                          color: Colors.blueAccent,
                         ),
                       ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // ── Keys grid ─────────────────────────────────────────────
-              Expanded(
-                child: Column(
-                  children: [
-                    // Row 1: 1 2 3
-                    Expanded(
-                      child: Row(children: [
-                        _buildKey('1'), _buildKey('2'), _buildKey('3'),
-                      ]),
-                    ),
-                    // Row 2: 4 5 6
-                    Expanded(
-                      child: Row(children: [
-                        _buildKey('4'), _buildKey('5'), _buildKey('6'),
-                      ]),
-                    ),
-                    // Row 3: 7 8 9
-                    Expanded(
-                      child: Row(children: [
-                        _buildKey('7'), _buildKey('8'), _buildKey('9'),
-                      ]),
-                    ),
-                    // Row 4: * 0 #
-                    Expanded(
-                      child: Row(children: [
-                        _buildKey('*', color: Colors.blueAccent),
-                        _buildKey('0'),
-                        _buildKey('#', color: Colors.blueAccent),
-                      ]),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              // ── Clear button ───────────────────────────────────────────
-              if (_input.isNotEmpty)
-                TextButton.icon(
-                  onPressed: _onClear,
-                  icon: const Icon(Icons.clear, size: 18),
-                  label: const Text('Clear'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-                ),
-            ],
-          ),
+            ),
+            const Spacer(),
+            // ── Dialpad Container ─────────────────────────────────────
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── Display Row ───────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 24), // Balance spacing
+                        Expanded(
+                          child: Text(
+                            _input.isEmpty ? 'Enter number' : _input,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: _input.isEmpty
+                                  ? Colors.grey[400]
+                                  : Colors.black87,
+                              letterSpacing: 2,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (_input.isNotEmpty)
+                          GestureDetector(
+                            onTap: _onBackspace,
+                            onLongPress: _onClear,
+                            child: const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.backspace_outlined,
+                                color: Colors.black54,
+                                size: 24,
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox(width: 32), // Spacer when no input
+                      ],
+                    ),
+                  ),
+                  Container(height: 1, color: const Color(0xFFEEEEEE)),
+                  // ── Keys grid ─────────────────────────────────────────────
+                  SizedBox(
+                    height: 380, // Increased size of keys
+                    child: Column(
+                      children: [
+                        _buildGridRow(['1', '2', '3']),
+                        _buildGridRow(['4', '5', '6']),
+                        _buildGridRow(['7', '8', '9']),
+                        _buildGridRow(['*', '0', '#']),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 48), // Bottom padding
+          ],
         ),
       ),
     );
   }
 }
-
-
 
 // ─── Wallet Screen ────────────────────────────────────────────────────────────
 class WalletScreen extends StatelessWidget {
@@ -748,7 +755,10 @@ class WalletScreen extends StatelessWidget {
             centerTitle: true,
             title: const Text(
               'Wallet',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
           ),
           body: SingleChildScrollView(
@@ -805,24 +815,54 @@ class WalletScreen extends StatelessWidget {
                 // ── Account Info ──────────────────────────────────────────
                 const Text(
                   'Account Info',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _InfoCard(children: [
-                  _InfoRow(icon: Icons.person_outline, label: 'Name', value: appState.currentUserName),
-                  const Divider(height: 1),
-                  _InfoRow(icon: Icons.email_outlined, label: 'Email', value: appState.userEmail.isNotEmpty ? appState.userEmail : '—'),
-                  const Divider(height: 1),
-                  _InfoRow(icon: Icons.phone_outlined, label: 'Phone', value: appState.userPhone.isNotEmpty ? appState.userPhone : '—'),
-                  const Divider(height: 1),
-                  _InfoRow(icon: Icons.tag_outlined, label: 'Endpoint ID', value: appState.myEndpointId),
-                ]),
+                _InfoCard(
+                  children: [
+                    _InfoRow(
+                      icon: Icons.person_outline,
+                      label: 'Name',
+                      value: appState.currentUserName,
+                    ),
+                    const Divider(height: 1),
+                    _InfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: appState.userEmail.isNotEmpty
+                          ? appState.userEmail
+                          : '—',
+                    ),
+                    const Divider(height: 1),
+                    _InfoRow(
+                      icon: Icons.phone_outlined,
+                      label: 'Phone',
+                      value: appState.userPhone.isNotEmpty
+                          ? appState.userPhone
+                          : '—',
+                    ),
+                    const Divider(height: 1),
+                    _InfoRow(
+                      icon: Icons.tag_outlined,
+                      label: 'Endpoint ID',
+                      value: appState.myEndpointId,
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 28),
 
                 // ── Quick actions ─────────────────────────────────────────
                 const Text(
                   'Quick Actions',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -831,16 +871,24 @@ class WalletScreen extends StatelessWidget {
                       icon: Icons.arrow_upward,
                       label: 'Send',
                       color: Colors.blueAccent,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const QRScannerScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const QRScannerScreen(),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     _QuickAction(
                       icon: Icons.arrow_downward,
                       label: 'Receive',
                       color: Colors.green,
-                      onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const ReceiveScreen())),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ReceiveScreen(),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -878,7 +926,11 @@ class _StatCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -893,11 +945,20 @@ class _StatCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
                   const SizedBox(height: 2),
-                  Text(value,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
@@ -918,7 +979,13 @@ class _InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
@@ -929,7 +996,11 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -942,10 +1013,12 @@ class _InfoRow extends StatelessWidget {
           Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           const Spacer(),
           Flexible(
-            child: Text(value,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis),
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -958,7 +1031,12 @@ class _QuickAction extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _QuickAction({required this.icon, required this.label, required this.color, required this.onTap});
+  const _QuickAction({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -976,7 +1054,10 @@ class _QuickAction extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 26),
               const SizedBox(height: 8),
-              Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+              Text(
+                label,
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),
@@ -1005,8 +1086,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         final filtered = _filter == 0
             ? all
             : _filter == 1
-                ? all.where((t) => !t.isPositive).toList()
-                : all.where((t) => t.isPositive).toList();
+            ? all.where((t) => !t.isPositive).toList()
+            : all.where((t) => t.isPositive).toList();
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8F9FA),
@@ -1016,7 +1097,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             centerTitle: true,
             title: const Text(
               'Transaction History',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
           ),
           body: Column(
@@ -1027,14 +1111,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Row(
                   children: [
-                    _FilterTab(label: 'All', active: _filter == 0, onTap: () => setState(() => _filter = 0)),
+                    _FilterTab(
+                      label: 'All',
+                      active: _filter == 0,
+                      onTap: () => setState(() => _filter = 0),
+                    ),
                     const SizedBox(width: 8),
-                    _FilterTab(label: 'Sent', active: _filter == 1, onTap: () => setState(() => _filter = 1)),
+                    _FilterTab(
+                      label: 'Sent',
+                      active: _filter == 1,
+                      onTap: () => setState(() => _filter = 1),
+                    ),
                     const SizedBox(width: 8),
-                    _FilterTab(label: 'Received', active: _filter == 2, onTap: () => setState(() => _filter = 2)),
+                    _FilterTab(
+                      label: 'Received',
+                      active: _filter == 2,
+                      onTap: () => setState(() => _filter = 2),
+                    ),
                     const Spacer(),
-                    Text('${filtered.length} txn${filtered.length == 1 ? '' : 's'}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                    Text(
+                      '${filtered.length} txn${filtered.length == 1 ? '' : 's'}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
                   ],
                 ),
               ),
@@ -1070,12 +1168,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             _filter == 0
                 ? 'No transactions yet'
                 : _filter == 1
-                    ? 'No sent transactions'
-                    : 'No received transactions',
-            style: TextStyle(fontSize: 16, color: Colors.grey[500], fontWeight: FontWeight.w500),
+                ? 'No sent transactions'
+                : 'No received transactions',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 6),
-          Text('Transactions will appear here', style: TextStyle(fontSize: 13, color: Colors.grey[400])),
+          Text(
+            'Transactions will appear here',
+            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+          ),
         ],
       ),
     );
@@ -1086,7 +1191,11 @@ class _FilterTab extends StatelessWidget {
   final String label;
   final bool active;
   final VoidCallback onTap;
-  const _FilterTab({required this.label, required this.active, required this.onTap});
+  const _FilterTab({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1120,7 +1229,9 @@ class _TxnCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPositive = tx.isPositive;
     final color = isPositive ? Colors.green : Colors.redAccent;
-    final icon = isPositive ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
+    final icon = isPositive
+        ? Icons.arrow_downward_rounded
+        : Icons.arrow_upward_rounded;
     final label = isPositive ? 'Received' : 'Sent';
     final date = tx.date;
     final dateStr =
@@ -1132,7 +1243,13 @@ class _TxnCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1140,7 +1257,10 @@ class _TxnCard extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
@@ -1151,22 +1271,39 @@ class _TxnCard extends StatelessWidget {
               children: [
                 Text(
                   tx.counterpartName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: color,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 6),
-                    Text(dateStr, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                    Text(
+                      dateStr,
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    ),
                   ],
                 ),
               ],
@@ -1175,7 +1312,11 @@ class _TxnCard extends StatelessWidget {
           // Amount
           Text(
             '${isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: color,
+            ),
           ),
         ],
       ),
@@ -1210,7 +1351,7 @@ class TransactionItem extends StatelessWidget {
             color: Colors.grey.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -1235,10 +1376,7 @@ class TransactionItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   date,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
                 ),
               ],
             ),
@@ -1256,4 +1394,3 @@ class TransactionItem extends StatelessWidget {
     );
   }
 }
-

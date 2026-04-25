@@ -146,8 +146,8 @@ class _BalanceCardState extends State<BalanceCard> {
                       child: Container(
                         width: 24,
                         height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.6),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -158,7 +158,7 @@ class _BalanceCardState extends State<BalanceCard> {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.orange.withOpacity(0.9),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -239,7 +239,37 @@ class _BalanceCardState extends State<BalanceCard> {
                   ),
                 ),
               ),
-              const Icon(Icons.wifi_tethering, color: Colors.white, size: 28),
+              Consumer<AppState>(
+                builder: (context, appState, child) {
+                  final phone = appState.userPhone;
+                  final displayPhone = phone.length >= 4 
+                      ? '******${phone.substring(phone.length - 4)}'
+                      : '******3264';
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Account',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        displayPhone,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ],
