@@ -72,7 +72,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
         onConnectionResult: (String id, Status status) {
           if (!mounted) return;
           if (status == Status.CONNECTED) {
-            setState(() => connectionStatus = 'Connected securely! Waiting for funds...');
+            setState(() => connectionStatus = 'Connected securely!');
           }
         },
         onDisconnected: (String id) {},
