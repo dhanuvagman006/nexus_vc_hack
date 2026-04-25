@@ -203,7 +203,7 @@ class HomeDashboard extends StatelessWidget {
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 28),
             _buildTransactionList(),
           ],
         ),
