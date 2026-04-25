@@ -72,7 +72,7 @@ function processTransaction(txn) {
   }
 
   // 2. Auto-create sender and receiver if not found
-  const sender   = getOrCreateUser(senderId,   senderName);
+  const sender = getOrCreateUser(senderId, senderName);
   const receiver = getOrCreateUser(receiverId, receiverName);
 
   // 3. Validate amount
@@ -103,14 +103,14 @@ function processTransaction(txn) {
   }
 
   // 5. Process — deduct from sender, credit receiver
-  sender.balance   = parseFloat((sender.balance   - amount).toFixed(2));
+  sender.balance = parseFloat((sender.balance - amount).toFixed(2));
   receiver.balance = parseFloat((receiver.balance + amount).toFixed(2));
 
   // 6. Record
   const record = {
     txn_id,
     senderId,
-    senderName:   sender.name,
+    senderName: sender.name,
     receiverId,
     receiverName: receiver.name,
     amount,
@@ -128,9 +128,9 @@ function processTransaction(txn) {
       status: 'success',
       txn_id,
       senderId,
-      senderName:    sender.name,
+      senderName: sender.name,
       receiverId,
-      receiverName:  receiver.name,
+      receiverName: receiver.name,
       amount,
       senderBalance: sender.balance,
       receiverBalance: receiver.balance,
@@ -232,8 +232,8 @@ app.post('/sync', (req, res) => {
     return { index, ...result.body };
   });
 
-  const successCount   = results.filter((r) => r.status === 'success').length;
-  const failedCount    = results.filter((r) => r.status === 'failed').length;
+  const successCount = results.filter((r) => r.status === 'success').length;
+  const failedCount = results.filter((r) => r.status === 'failed').length;
   const duplicateCount = results.filter((r) => r.status === 'duplicate').length;
 
   log('SYNC', { total: txnBatch.length, successCount, failedCount, duplicateCount }, 'COMPLETE');
@@ -281,8 +281,8 @@ app.post('/sms', (req, res) => {
     });
   }
 
-  const amount   = parseFloat(parts[1]);
-  const txn_id   = parts[parts.length - 1];         // last token
+  const amount = parseFloat(parts[1]);
+  const txn_id = parts[parts.length - 1];         // last token
   const senderId = parts[2];                         // 3rd token
   // Everything between senderId and txn_id is the receiverId (handles spaces)
   const receiverId = parts.slice(3, parts.length - 1).join(' ');
@@ -319,8 +319,9 @@ app.post('/sms', (req, res) => {
 // Expected body (same shape as /transaction):
 //   {
 //     "txn_id":    "TXN17430...",
-//     "senderId":  "Alexey G.",
-//     "receiverId": "9876543210",
+//     "senderId":  "9876543210",   ← always sender's phone number
+//     "senderName": "Alexey G.",  ← optional display name
+//     "receiverId": "6360139965",  ← always receiver's phone number
 //     "amount":    500
 //   }
 //
@@ -352,7 +353,7 @@ app.post('/relay', (req, res) => {
   const result = processTransaction({
     txn_id,
     senderId,
-    senderName:   senderName  || senderId,
+    senderName: senderName || senderId,
     receiverId,
     receiverName: receiverName || receiverId,
     amount: parsedAmount,
@@ -364,7 +365,6 @@ app.post('/relay', (req, res) => {
 // ─── POST /reset ──────────────────────────────────────────────────────────────
 // Demo helper — wipe all users, transactions and logs for a clean run
 app.post('/reset', (_req, res) => {
-  // Clear all in-memory state
   Object.keys(users).forEach((k) => delete users[k]);
   transactions.length = 0;
   processedTxnIds.clear();

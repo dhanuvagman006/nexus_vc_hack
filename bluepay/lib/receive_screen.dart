@@ -51,7 +51,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     final appState = Provider.of<AppState>(context, listen: false);
     try {
       bool? isAdv = await Nearby().startAdvertising(
-        appState.currentUserName, // Advertise with real name so sender can display it
+        appState.userPhone.isNotEmpty ? appState.userPhone : appState.currentUserName, // Advertise with phone number as the identity
         strategy,
         onConnectionInitiated: (String id, ConnectionInfo info) {
           if (!mounted) return;
@@ -93,11 +93,11 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     try {
       final decoded = json.decode(jsonString);
       final double? amount = double.tryParse(decoded['amount']?.toString() ?? '');
-      final String senderName = decoded['senderName'] ?? 'Unknown Sender';
+      final String senderPhone = decoded['senderPhone'] ?? decoded['senderName'] ?? 'Unknown';
 
       if (amount != null && amount > 0) {
         // Update global state
-        Provider.of<AppState>(context, listen: false).receiveMoney(amount, senderName);
+        Provider.of<AppState>(context, listen: false).receiveMoney(amount, senderPhone);
 
         // Show Success dialog and return
         showSuccessAnimation(context, () {
@@ -118,7 +118,8 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final myName = Provider.of<AppState>(context, listen: false).currentUserName;
+    final appState = Provider.of<AppState>(context, listen: false);
+    final myPhone = appState.userPhone.isNotEmpty ? appState.userPhone : appState.currentUserName;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Receive Money Offline')),
@@ -132,7 +133,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              myName,
+              myPhone,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -154,7 +155,7 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
                 ],
               ),
               child: QrImageView(
-                data: myName,
+                data: myPhone,
                 version: QrVersions.auto,
                 size: 230.0,
               ),
