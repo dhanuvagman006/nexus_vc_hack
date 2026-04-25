@@ -635,7 +635,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 200),
+            const SizedBox(height: 24),
             // ── Hint banner ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -681,79 +681,78 @@ class _DialpadScreenState extends State<DialpadScreen> {
                 ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 16),
             // ── Dialpad Container ─────────────────────────────────────
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black, width: 1.5),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // ── Display Row ───────────────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 24,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(width: 24), // Balance spacing
-                        Expanded(
-                          child: Text(
-                            _input.isEmpty ? context.l10n.enterNumber : _input,
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              color: _input.isEmpty
-                                  ? Colors.grey[400]
-                                  : Colors.black,
-                              letterSpacing: 2,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (_input.isNotEmpty)
-                          GestureDetector(
-                            onTap: _onBackspace,
-                            onLongPress: _onClear,
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.backspace_outlined,
-                                color: Colors.black,
-                                size: 24,
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.black, width: 1.5),
+                ),
+                child: Column(
+                  children: [
+                    // ── Display Row ───────────────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(width: 24), // Balance spacing
+                          Expanded(
+                            child: Text(
+                              _input.isEmpty ? context.l10n.enterNumber : _input,
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: _input.isEmpty
+                                    ? Colors.grey[400]
+                                    : Colors.black,
+                                letterSpacing: 2,
                               ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          )
-                        else
-                          const SizedBox(width: 32), // Spacer when no input
-                      ],
+                          ),
+                          if (_input.isNotEmpty)
+                            GestureDetector(
+                              onTap: _onBackspace,
+                              onLongPress: _onClear,
+                              child: const Padding(
+                                padding: EdgeInsets.only(left: 8),
+                                child: Icon(
+                                  Icons.backspace_outlined,
+                                  color: Colors.black,
+                                  size: 24,
+                                ),
+                              ),
+                            )
+                          else
+                            const SizedBox(width: 32), // Spacer when no input
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(height: 1.5, color: Colors.black),
-                  // ── Keys grid ─────────────────────────────────────────────
-                  SizedBox(
-                    height: 380, // Increased size of keys
-                    child: Column(
-                      children: [
-                        _buildGridRow(['1', '2', '3']),
-                        _buildGridRow(['4', '5', '6']),
-                        _buildGridRow(['7', '8', '9']),
-                        _buildGridRow(['*', '0', '#']),
-                      ],
+                    Container(height: 1.5, color: Colors.black),
+                    // ── Keys grid ─────────────────────────────────────────────
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildGridRow(['1', '2', '3']),
+                          _buildGridRow(['4', '5', '6']),
+                          _buildGridRow(['7', '8', '9']),
+                          _buildGridRow(['*', '0', '#']),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 48), // Bottom padding
           ],
         ),
       ),
@@ -787,8 +786,8 @@ class WalletScreen extends StatelessWidget {
             title: Text(
               context.l10n.wallet,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
               ),
             ),
           ),
@@ -848,8 +847,8 @@ class WalletScreen extends StatelessWidget {
                   context.l10n.accountInfo,
                   style: const TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -891,8 +890,8 @@ class WalletScreen extends StatelessWidget {
                   context.l10n.quickActions,
                   style: const TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -957,20 +956,18 @@ class _StatCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black, width: 1.5),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 1.5),
+              ),
               child: Icon(icon, color: iconColor, size: 18),
             ),
             const SizedBox(width: 10),
@@ -980,15 +977,15 @@ class _StatCard extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     value,
                     style: const TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1011,14 +1008,8 @@ class _InfoCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black, width: 1.5),
       ),
       child: Column(children: children),
     );
@@ -1041,14 +1032,23 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.blueAccent),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0E0E0),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1.5),
+            ),
+            child: Icon(icon, size: 16, color: Colors.black),
+          ),
           const SizedBox(width: 12),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          Text(label, style: const TextStyle(color: Color(0xFF757575), fontSize: 13, fontWeight: FontWeight.w500)),
           const Spacer(),
           Flexible(
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Colors.black),
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1077,17 +1077,11 @@ class _QuickAction extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: Colors.black, width: 1.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1098,16 +1092,17 @@ class _QuickAction extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 1.5),
                 ),
-                child: Icon(icon, color: Colors.black87, size: 22),
+                child: Icon(icon, color: Colors.black, size: 22),
               ),
               const SizedBox(height: 14),
               Text(
                 label,
                 style: const TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -1130,6 +1125,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // 0 = All, 1 = Sent, 2 = Received
   int _filter = 0;
 
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
@@ -1150,8 +1146,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             title: Text(
               context.l10n.transactionHistory,
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
               ),
             ),
           ),
@@ -1159,7 +1155,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               // ── Filter tabs ───────────────────────────────────────────
               Container(
-                color: Colors.white,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Colors.black12, width: 1)),
+                ),
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Row(
                   children: [
@@ -1183,7 +1182,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     const Spacer(),
                     Text(
                       '${filtered.length} txn${filtered.length == 1 ? '' : 's'}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF757575), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -1214,7 +1213,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey[300]),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0E0E0),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1.5),
+            ),
+            child: const Icon(Icons.receipt_long_outlined, size: 40, color: Colors.black54),
+          ),
           const SizedBox(height: 16),
           Text(
             _filter == 0
@@ -1222,22 +1230,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 : _filter == 1
                 ? context.l10n.noSentTransactions
                 : context.l10n.noReceivedTransactions,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
-              color: Colors.grey[500],
-              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             context.l10n.transactionsWillAppearHere,
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF9E9E9E)),
           ),
         ],
       ),
     );
   }
 }
+
 
 class _FilterTab extends StatelessWidget {
   final String label;
@@ -1257,15 +1266,16 @@ class _FilterTab extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? Colors.blueAccent : Colors.grey.shade100,
+          color: active ? Colors.black : Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black, width: 1.5),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: active ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.w700,
+            color: active ? Colors.white : Colors.black,
           ),
         ),
       ),
@@ -1280,7 +1290,7 @@ class _TxnCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = tx.isPositive;
-    final color = isPositive ? Colors.green : Colors.redAccent;
+    final color = isPositive ? Colors.green : const Color(0xFFE53935);
     final icon = isPositive
         ? Icons.arrow_downward_rounded
         : Icons.arrow_upward_rounded;
@@ -1291,29 +1301,24 @@ class _TxnCard extends StatelessWidget {
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black, width: 1.5),
       ),
       child: Row(
         children: [
           // Icon bubble
           Container(
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withOpacity(0.15),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1.5),
             ),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 14),
           // Name & date
@@ -1324,9 +1329,9 @@ class _TxnCard extends StatelessWidget {
                 Text(
                   tx.counterpartName,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     fontSize: 15,
-                    color: Colors.black87,
+                    color: Colors.black,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1339,22 +1344,23 @@ class _TxnCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: color.withOpacity(0.4), width: 1),
                       ),
                       child: Text(
                         label,
                         style: TextStyle(
                           fontSize: 10,
                           color: color,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       dateStr,
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF757575)),
                     ),
                   ],
                 ),
@@ -1365,7 +1371,7 @@ class _TxnCard extends StatelessWidget {
           Text(
             '${isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
               fontSize: 16,
               color: color,
             ),
@@ -1459,31 +1465,26 @@ class _LanguageSwitcherRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.black, width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1.5),
             ),
-            child: const Icon(Icons.language, color: Colors.blueAccent, size: 22),
+            child: const Icon(Icons.language, color: Colors.black, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(
               context.l10n.changeLanguage,
               style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontWeight: FontWeight.w800,
                 fontSize: 15,
               ),
             ),
@@ -1493,10 +1494,10 @@ class _LanguageSwitcherRow extends StatelessWidget {
               return DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: appState.locale,
-                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
+                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
                   style: const TextStyle(
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
                   onChanged: (String? newValue) {
