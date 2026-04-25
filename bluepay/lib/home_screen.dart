@@ -291,7 +291,7 @@ class HomeDashboard extends StatelessWidget {
           itemCount: appState.transactions.length,
           itemBuilder: (context, index) {
             final tx = appState.transactions[index];
-            return _buildTransactionItem(
+            return TransactionItem(
               name: tx.counterpartName,
               date: '${tx.date.day}/${tx.date.month}/${tx.date.year} at ${tx.date.hour}:${tx.date.minute.toString().padLeft(2, '0')}',
               amount: '${tx.isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
@@ -303,68 +303,7 @@ class HomeDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionItem({
-    required String name,
-    required String date,
-    required String amount,
-    required bool isPositive,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.grey[200],
-            child: const Icon(Icons.person, color: Colors.blueAccent),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  date,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: isPositive ? Colors.green : Colors.redAccent,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
 
 class ScanPlaceholderScreen extends StatelessWidget {
@@ -428,9 +367,186 @@ class HistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
-      body: const Center(
-        child: Text('Transaction History Page Content'),
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: const Text('Transaction History'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0.5,
+      ),
+      body: Consumer<AppState>(
+        builder: (context, appState, child) {
+          if (appState.transactions.isEmpty) {
+            return const Center(
+              child: Text(
+                'No transactions yet.',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            );
+          }
+
+          // Group by Date (ignoring time)
+          final Map<DateTime, List<Transaction>> grouped = {};
+          for (var tx in appState.transactions) {
+            final date = DateTime(tx.date.year, tx.date.month, tx.date.day);
+            grouped.putIfAbsent(date, () => []).add(tx);
+          }
+
+          final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(24.0),
+            itemCount: sortedDates.length,
+            itemBuilder: (context, index) {
+              final date = sortedDates[index];
+              final txs = grouped[date]!;
+              
+              // Calculate daily net total
+              double dailyTotal = 0;
+              for (var t in txs) {
+                if (t.isPositive) {
+                  dailyTotal += t.amount;
+                } else {
+                  dailyTotal -= t.amount;
+                }
+              }
+
+              // Format date string
+              final dateStr = _formatDate(date);
+              final totalStr = '${dailyTotal >= 0 ? '+' : '-'}₹${dailyTotal.abs().toStringAsFixed(2)}';
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F3F5), // Light background for grouping
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          dateStr,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          totalStr,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: dailyTotal >= 0 ? Colors.green : Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ...txs.map((tx) {
+                      return TransactionItem(
+                        name: tx.counterpartName,
+                        date: '${tx.date.hour}:${tx.date.minute.toString().padLeft(2, '0')}',
+                        amount: '${tx.isPositive ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}',
+                        isPositive: tx.isPositive,
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    
+    if (date == today) return 'Today';
+    if (date == yesterday) return 'Yesterday';
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+}
+
+class TransactionItem extends StatelessWidget {
+  final String name;
+  final String date;
+  final String amount;
+  final bool isPositive;
+
+  const TransactionItem({
+    super.key,
+    required this.name,
+    required this.date,
+    required this.amount,
+    required this.isPositive,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: Colors.grey[200],
+            child: const Icon(Icons.person, color: Colors.blueAccent),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isPositive ? Colors.green : Colors.redAccent,
+            ),
+          ),
+        ],
       ),
     );
   }

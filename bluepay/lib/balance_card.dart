@@ -119,15 +119,18 @@ class _BalanceCardState extends State<BalanceCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.lightGreenAccent, //.withOpacity(0.15)
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
                   'Active',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -204,7 +207,10 @@ class _BalanceCardState extends State<BalanceCard> {
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
@@ -221,7 +227,9 @@ class _BalanceCardState extends State<BalanceCard> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _isBalanceVisible ? 'Hide balance' : 'Reveal the balance',
+                        _isBalanceVisible
+                            ? 'Hide balance'
+                            : 'Reveal the balance',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -231,11 +239,7 @@ class _BalanceCardState extends State<BalanceCard> {
                   ),
                 ),
               ),
-              const Icon(
-                Icons.wifi_tethering,
-                color: Colors.white,
-                size: 28,
-              ),
+              const Icon(Icons.wifi_tethering, color: Colors.white, size: 28),
             ],
           ),
         ],

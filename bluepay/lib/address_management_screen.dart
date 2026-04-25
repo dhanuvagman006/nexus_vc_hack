@@ -44,22 +44,37 @@ class _AddressManagementScreenState extends State<AddressManagementScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            TextField(
-              controller: _addressController,
-              decoration: InputDecoration(
-                labelText: 'Address',
-                alignLabelWithHint: true,
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.only(bottom: 56.0),
-                  child: Icon(Icons.home_outlined),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Address',
+                  style: TextStyle(
+                    color: Color(0xFF6C757D),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _addressController,
+                  maxLines: 4,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(bottom: 56.0),
+                      child: Icon(Icons.home_outlined, color: Colors.grey[700]),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF1F3F5),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              maxLines: 4,
+              ],
             ),
             const SizedBox(height: 32),
             SizedBox(
