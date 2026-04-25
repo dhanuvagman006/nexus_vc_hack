@@ -770,162 +770,194 @@ class WalletScreen extends StatelessWidget {
     return Consumer<AppState>(
       builder: (context, appState, _) {
         final txns = appState.transactions;
-        final totalSent = txns
-            .where((t) => !t.isPositive)
-            .fold(0.0, (sum, t) => sum + t.amount);
-        final totalReceived = txns
-            .where((t) => t.isPositive)
-            .fold(0.0, (sum, t) => sum + t.amount);
+        final totalSent = txns.where((t) => !t.isPositive).fold(0.0, (sum, t) => sum + t.amount);
+        final totalReceived = txns.where((t) => t.isPositive).fold(0.0, (sum, t) => sum + t.amount);
         final pending = SmsQueueService.instance.pendingCount;
 
+        // Design Tokens
+        const Color colorPageBg = Color(0xFFF2F2F2);
+        const Color colorCardBg = Color(0xFF1B4332);
+        const Color colorHeadline = Color(0xFF7ED957);
+
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: colorPageBg,
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: colorCardBg,
             elevation: 0,
             centerTitle: true,
             title: Text(
-              context.l10n.wallet,
+              context.l10n.wallet.toUpperCase(),
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                fontWeight: FontWeight.w900,
+                color: colorHeadline,
+                letterSpacing: 1.5,
+                fontSize: 18,
               ),
             ),
+            foregroundColor: Colors.white,
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Balance card ──────────────────────────────────────────
-                const BalanceCard(),
-                const SizedBox(height: 24),
-
-                // ── Stats row ─────────────────────────────────────────────
-                Row(
-                  children: [
-                    _StatCard(
-                      label: 'Total Sent',
-                      value: '₹${totalSent.toStringAsFixed(2)}',
-                      icon: Icons.arrow_upward_rounded,
-                      iconBg: Colors.red.shade50,
-                      iconColor: Colors.redAccent,
+                // Premium Wallet Header
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: colorCardBg,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(32),
+                      bottomRight: Radius.circular(32),
                     ),
-                    const SizedBox(width: 14),
-                    _StatCard(
-                      label: 'Total Received',
-                      value: '₹${totalReceived.toStringAsFixed(2)}',
-                      icon: Icons.arrow_downward_rounded,
-                      iconBg: Colors.green.shade50,
-                      iconColor: Colors.green,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    _StatCard(
-                      label: 'Transactions',
-                      value: txns.length.toString(),
-                      icon: Icons.receipt_long_outlined,
-                      iconBg: Colors.blue.shade50,
-                      iconColor: Colors.blueAccent,
-                    ),
-                    const SizedBox(width: 14),
-                    _StatCard(
-                      label: 'SMS Pending',
-                      value: pending.toString(),
-                      icon: Icons.hourglass_top_rounded,
-                      iconBg: Colors.orange.shade50,
-                      iconColor: Colors.orange,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                // ── Account Info ──────────────────────────────────────────
-                Text(
-                  context.l10n.accountInfo,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
-                ),
-                const SizedBox(height: 12),
-                _InfoCard(
-                  children: [
-                    _InfoRow(
-                      icon: Icons.person_outline,
-                      label: context.l10n.name,
-                      value: appState.currentUserName,
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.email_outlined,
-                      label: context.l10n.email,
-                      value: appState.userEmail.isNotEmpty
-                          ? appState.userEmail
-                          : '—',
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.phone_outlined,
-                      label: context.l10n.phone,
-                      value: appState.userPhone.isNotEmpty
-                          ? appState.userPhone
-                          : '—',
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.tag_outlined,
-                      label: context.l10n.endpointId,
-                      value: appState.myEndpointId,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                // ── Quick actions ─────────────────────────────────────────
-                Text(
-                  context.l10n.quickActions,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _QuickAction(
-                      icon: Icons.arrow_upward,
-                      label: context.l10n.sendMoney,
-                      iconBgColor: const Color(0xFFFFF3E0), // Light orange/yellow
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const QRScannerScreen(),
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'AVAILABLE BALANCE',
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    _QuickAction(
-                      icon: Icons.arrow_downward,
-                      label: context.l10n.receiveMoney,
-                      iconBgColor: const Color(0xFFE8F5E9), // Light green
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ReceiveScreen(),
+                      const SizedBox(height: 12),
+                      Text(
+                        '₹${appState.balance.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 42,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          _WalletSummaryItem(
+                            label: 'INCOME',
+                            value: '₹${totalReceived.toStringAsFixed(2)}',
+                            icon: Icons.add_circle_outline,
+                            color: colorHeadline,
+                          ),
+                          Container(width: 1, height: 40, color: Colors.white12),
+                          _WalletSummaryItem(
+                            label: 'EXPENSE',
+                            value: '₹${totalSent.toStringAsFixed(2)}',
+                            icon: Icons.remove_circle_outline,
+                            color: Colors.redAccent.shade100,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                _LanguageSwitcherRow(),
-                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            context.l10n.transactionHistory,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text('See All', style: TextStyle(color: Colors.blueAccent)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const BalanceCard(),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          _StatCard(
+                            label: 'Total Sent',
+                            value: '₹${totalSent.toStringAsFixed(2)}',
+                            icon: Icons.arrow_upward_rounded,
+                            iconBg: Colors.red.shade50,
+                            iconColor: Colors.redAccent,
+                          ),
+                          const SizedBox(width: 14),
+                          _StatCard(
+                            label: 'Total Received',
+                            value: '₹${totalReceived.toStringAsFixed(2)}',
+                            icon: Icons.arrow_downward_rounded,
+                            iconBg: Colors.green.shade50,
+                            iconColor: Colors.green,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          _StatCard(
+                            label: 'Transactions',
+                            value: txns.length.toString(),
+                            icon: Icons.receipt_long_outlined,
+                            iconBg: Colors.blue.shade50,
+                            iconColor: Colors.blueAccent,
+                          ),
+                          const SizedBox(width: 14),
+                          _StatCard(
+                            label: 'SMS Pending',
+                            value: pending.toString(),
+                            icon: Icons.hourglass_top_rounded,
+                            iconBg: Colors.orange.shade50,
+                            iconColor: Colors.orange,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        context.l10n.accountInfo,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 12),
+                      _InfoCard(
+                        children: [
+                          _InfoRow(icon: Icons.person_outline, label: context.l10n.name, value: appState.currentUserName),
+                          const Divider(height: 1),
+                          _InfoRow(icon: Icons.email_outlined, label: context.l10n.email, value: appState.userEmail.isNotEmpty ? appState.userEmail : '—'),
+                          const Divider(height: 1),
+                          _InfoRow(icon: Icons.phone_outlined, label: context.l10n.phone, value: appState.userPhone.isNotEmpty ? appState.userPhone : '—'),
+                          const Divider(height: 1),
+                          _InfoRow(icon: Icons.tag_outlined, label: context.l10n.endpointId, value: appState.myEndpointId),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        context.l10n.quickActions,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _QuickAction(
+                            icon: Icons.qr_code_scanner,
+                            label: context.l10n.scanQrCode,
+                            iconBgColor: const Color(0xFFE3F2FD),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QRScannerScreen())),
+                          ),
+                          const SizedBox(width: 12),
+                          _QuickAction(
+                            icon: Icons.qr_code,
+                            label: context.l10n.receiveMoney,
+                            iconBgColor: const Color(0xFFE8F5E9),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceiveScreen())),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -934,6 +966,7 @@ class WalletScreen extends StatelessWidget {
     );
   }
 }
+
 
 class _StatCard extends StatelessWidget {
   final String label;
@@ -1450,71 +1483,52 @@ class TransactionItem extends StatelessWidget {
     );
   }
 }
+class _WalletSummaryItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
 
-class _LanguageSwitcherRow extends StatelessWidget {
+  const _WalletSummaryItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
+    return Expanded(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.language, color: Colors.blueAccent, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              context.l10n.changeLanguage,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-          ),
-          Consumer<AppState>(
-            builder: (context, appState, _) {
-              return DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: appState.locale,
-                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
-                  style: const TextStyle(
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      appState.setLocale(newValue);
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(value: 'en', child: Text('English')),
-                    DropdownMenuItem(value: 'hi', child: Text('हिंदी')),
-                    DropdownMenuItem(value: 'kn', child: Text('ಕನ್ನಡ')),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
-              );
-            },
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),
     );
   }
 }
+

@@ -65,11 +65,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const HelpSupportScreen(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
                           );
                         },
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.language,
+                        title: context.l10n.changeLanguage,
+                        onTap: () => _showLanguageDialog(context),
                       ),
                       _buildOptionItem(
                         icon: Icons.logout,
@@ -265,6 +268,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.changeLanguage),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLanguageTile(context, 'English', 'en'),
+            _buildLanguageTile(context, 'हिंदी', 'hi'),
+            _buildLanguageTile(context, 'ಕನ್ನಡ', 'kn'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(BuildContext context, String label, String code) {
+    return Consumer<AppState>(
+      builder: (context, appState, _) {
+        final bool isSelected = appState.locale == code;
+        return ListTile(
+          title: Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+          trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+          onTap: () {
+            appState.setLocale(code);
+            Navigator.pop(context);
+          },
+        );
+      },
     );
   }
 }
