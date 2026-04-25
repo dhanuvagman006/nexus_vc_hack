@@ -177,9 +177,6 @@ class HomeDashboard extends StatelessWidget {
                               : Icons.signal_cellular_off,
                           size: 16,
                           color: smsQ.hasSignal ? Colors.green : Colors.grey,
-                          color: smsQ.isGsmAvailable
-                              ? Colors.green
-                              : Colors.grey,
                         ),
                       ],
                     ),
@@ -523,8 +520,6 @@ class _DialpadScreenState extends State<DialpadScreen> {
         'TXN${DateTime.now().millisecondsSinceEpoch}${(DateTime.now().microsecond % 9999).toString().padLeft(4, '0')}';
     final smsBody =
         '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","receiverId":"$receiverPhone","amount":$amount}';
-    final smsBody =
-        '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"$receiverPhone","amount":$amount}';
 
     // Deduct locally & record
     appState.sendMoney(amount, receiverPhone);
@@ -870,8 +865,8 @@ class WalletScreen extends StatelessWidget {
                   children: [
                     _QuickAction(
                       icon: Icons.arrow_upward,
-                      label: 'Send',
-                      color: Colors.blueAccent,
+                      label: 'Send Money',
+                      iconBgColor: const Color(0xFFFFF3E0), // Light orange/yellow
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -882,8 +877,8 @@ class WalletScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     _QuickAction(
                       icon: Icons.arrow_downward,
-                      label: 'Receive',
-                      color: Colors.green,
+                      label: 'Receive Money',
+                      iconBgColor: const Color(0xFFE8F5E9), // Light green
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -1030,12 +1025,12 @@ class _InfoRow extends StatelessWidget {
 class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
+  final Color iconBgColor;
   final VoidCallback onTap;
   const _QuickAction({
     required this.icon,
     required this.label,
-    required this.color,
+    required this.iconBgColor,
     required this.onTap,
   });
 
@@ -1045,19 +1040,38 @@ class _QuickAction extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
+          padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: color.withOpacity(0.3)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 26),
-              const SizedBox(height: 8),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.black87, size: 22),
+              ),
+              const SizedBox(height: 14),
               Text(
                 label,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
             ],
           ),
