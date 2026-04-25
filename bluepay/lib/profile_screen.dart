@@ -5,6 +5,7 @@ import 'state/app_state.dart';
 import 'edit_profile_screen.dart';
 import 'address_management_screen.dart';
 import 'help_support_screen.dart';
+import 'tutorial_screen.dart';
 import 'l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -53,6 +54,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             MaterialPageRoute(
                               builder: (context) =>
                                   const AddressManagementScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _buildOptionItem(
+                        icon: Icons.menu_book_outlined,
+                        title: context.l10n.tutorial,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TutorialScreen(),
                             ),
                           );
                         },

@@ -6,6 +6,7 @@ import 'state/app_state.dart';
 import 'profile_screen.dart';
 import 'balance_card.dart';
 import 'services/sms_queue_service.dart';
+import 'services/radar_service.dart';
 import 'l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     const HomeDashboard(),
     const DialpadScreen(),
+    const _RadarScanScreen(),
     const WalletScreen(),
     const HistoryScreen(),
   ];
@@ -35,9 +37,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return Consumer<SmsQueueService>(
-      builder: (context, smsQ, _) {
+    return Consumer2<SmsQueueService, RadarService>(
+      builder: (context, smsQ, radar, _) {
         final pending = smsQ.pendingCount;
+
+        // Scan tab badge (green dot when nearby users found)
+        Widget scanIcon = const Icon(Icons.sensors, size: 28);
+        if (radar.state == RadarState.found) {
+          scanIcon = Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Icon(Icons.sensors, size: 28),
+              Positioned(
+                top: -2,
+                right: -4,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
 
         Widget dialpadIcon = const Icon(Icons.dialpad, size: 28);
         if (pending > 0) {
@@ -79,7 +104,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
+            onTap: (index) {
+              final radar = context.read<RadarService>();
+              if (index == 2 && _currentIndex != 2) {
+                radar.startAutoScan();
+              } else if (_currentIndex == 2 && index != 2) {
+                radar.stopAutoScan();
+              }
+              setState(() => _currentIndex = index);
+            },
             type: BottomNavigationBarType.fixed,
             showSelectedLabels: false,
             showUnselectedLabels: false,
@@ -93,6 +126,10 @@ class _HomeScreenState extends State<HomeScreen> {
               label: context.l10n.home,
             ),
             BottomNavigationBarItem(icon: dialpadIcon, label: context.l10n.dialpad),
+            BottomNavigationBarItem(
+              icon: scanIcon,
+              label: 'Scan',
+            ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.account_balance_wallet_outlined, size: 28),
               label: context.l10n.wallet,
@@ -388,6 +425,335 @@ class HomeDashboard extends StatelessWidget {
   }
 }
 
+// ─── Radar Scan Screen ──────────────────────────────────────────────────────────
+class _RadarScanScreen extends StatefulWidget {
+  const _RadarScanScreen();
+
+  @override
+  State<_RadarScanScreen> createState() => _RadarScanScreenState();
+}
+
+class _RadarScanScreenState extends State<_RadarScanScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<RadarService>(
+      builder: (context, radar, _) {
+        final isScanning = radar.state == RadarState.scanning;
+        final hasUsers = radar.state == RadarState.found;
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FA),
+          appBar: AppBar(
+            title: const Text(
+              'Radar Scan',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.black),
+                onPressed: () {
+                  radar.startScan();
+                },
+              ),
+            ],
+          ),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              // Radar Animation Area
+              Center(
+                child: SizedBox(
+                  width: 280,
+                  height: 280,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (isScanning || hasUsers)
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return CustomPaint(
+                              size: const Size(280, 280),
+                              painter: _RadarScreenRingsPainter(
+                                progress: _controller.value,
+                                color: hasUsers ? Colors.green : const Color(0xFF4FC3F7),
+                              ),
+                            );
+                          },
+                        ),
+                      // Center Avatar
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(
+                            color: hasUsers ? Colors.green : (isScanning ? const Color(0xFF4FC3F7) : Colors.grey),
+                            width: 3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (hasUsers ? Colors.green : (isScanning ? const Color(0xFF4FC3F7) : Colors.grey)).withOpacity(0.3),
+                              blurRadius: 15,
+                              spreadRadius: 5,
+                            )
+                          ],
+                        ),
+                        child: Icon(
+                          hasUsers ? Icons.people : (isScanning ? Icons.wifi_tethering : Icons.wifi_off),
+                          size: 40,
+                          color: hasUsers ? Colors.green : (isScanning ? const Color(0xFF4FC3F7) : Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              // Status Text
+              _buildStatusText(context, radar),
+              const Spacer(),
+              // Quick Actions Footer
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -5),
+                    )
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildFooterAction(
+                        title: context.l10n.sendMoney,
+                        icon: Icons.qr_code_scanner,
+                        color: Colors.amber,
+                        onTap: () {
+                           Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QRScannerScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildFooterAction(
+                        title: context.l10n.receiveMoney,
+                        icon: Icons.qr_code_2,
+                        color: Colors.green,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ReceiveScreen()),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatusText(BuildContext context, RadarService radar) {
+    if (radar.state == RadarState.permissionDenied) {
+      return Column(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 40),
+          const SizedBox(height: 12),
+          Text(
+            context.l10n.radarPermissionNeeded,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () => radar.startScan(),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+            child: const Text('Grant Permissions', style: TextStyle(color: Colors.white)),
+          )
+        ],
+      );
+    }
+
+    if (radar.state == RadarState.found) {
+      return Column(
+        children: [
+          Text(
+            '${radar.nearbyCount} Users Found!',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Tap Send Money below to scan their QR code.',
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ],
+      );
+    }
+
+    if (radar.state == RadarState.scanning) {
+      return Column(
+        children: [
+          Text(
+            context.l10n.scanningNearby,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF4FC3F7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Searching for BluePay users nearby...',
+            style: TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Text(
+          context.l10n.noUsersNearby,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Ask them to open the Receive screen.',
+          style: TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooterAction({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.black, width: 1.5),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black, width: 1.5),
+              ),
+              child: Icon(icon, color: Colors.black, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Radar Rings Painter ──────────────────────────────────────────────────────
+class _RadarScreenRingsPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  _RadarScreenRingsPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxRadius = size.width / 2;
+
+    for (int i = 0; i < 4; i++) {
+      final stagger = (progress + i * 0.25) % 1.0;
+      final radius = maxRadius * stagger;
+      final opacity = (1.0 - stagger).clamp(0.0, 0.8);
+
+      final paint = Paint()
+        ..color = color.withOpacity(opacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0;
+
+      canvas.drawCircle(center, radius, paint);
+      
+      // Also draw a filled circle with very low opacity
+      final fillPaint = Paint()
+        ..color = color.withOpacity(opacity * 0.1)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius, fillPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RadarScreenRingsPainter oldDelegate) {
+    return oldDelegate.progress != progress || oldDelegate.color != color;
+  }
+}
+
 // ─── Dialpad Screen ──────────────────────────────────────────────────────────
 class DialpadScreen extends StatefulWidget {
   const DialpadScreen({super.key});
@@ -615,7 +981,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 24),
+            const SizedBox(height: 64),
             // ── Hint banner ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

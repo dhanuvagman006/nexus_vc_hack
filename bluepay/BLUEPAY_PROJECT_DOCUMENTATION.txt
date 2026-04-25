@@ -1,0 +1,632 @@
+
+================================================================================
+        BLUEPAY — COMPLETE PROJECT DOCUMENTATION
+        Offline Rural Payments | Flutter App
+================================================================================
+
+PROJECT: BluePay (nexus_vc_hack/bluepay)
+VERSION: 1.0.0+1
+DATE DOCUMENTED: 2026-04-25
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+BluePay is a Flutter-based mobile payment application designed specifically for
+OFFLINE rural payments. It allows users to send and receive money even without
+internet connectivity, using a clever combination of:
+
+  - Bluetooth + WiFi Direct (Google Nearby Connections) for device-to-device
+    local transfers
+  - GSM SMS as a relay channel to notify the banking backend when a transaction
+    happens
+  - USSD-style dialpad as a fallback input method (*#amount#phone#)
+  - QR Code for receiver identity sharing
+
+The app targets Android devices and is built to work in areas with poor or
+zero internet connectivity — a common challenge in rural India.
+
+================================================================================
+2. TECH STACK
+================================================================================
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  Layer              │  Technology                                   │
+  ├─────────────────────────────────────────────────────────────────────│
+  │  UI Framework       │  Flutter (Dart)                               │
+  │  Language           │  Dart (SDK ^3.11.5) + Kotlin (Android native) │
+  │  State Management   │  Provider (ChangeNotifier pattern)            │
+  │  Local Storage      │  SharedPreferences                            │
+  │  Peer Connectivity  │  Google Nearby Connections (P2P_CLUSTER)      │
+  │  QR Scanning        │  mobile_scanner (camera-based)                │
+  │  QR Generation      │  qr_flutter                                   │
+  │  SMS Sending        │  background_sms                               │
+  │  Network Detection  │  connectivity_plus                            │
+  │  Permissions        │  permission_handler                           │
+  │  Localization       │  Custom hand-rolled (no intl package)         │
+  │  App Icon           │  flutter_launcher_icons                       │
+  │  Deep Links         │  url_launcher                                 │
+  │  Android Platform   │  Kotlin (MainActivity + BroadcastReceiver)    │
+  └─────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+3. ALL DEPENDENCIES (pubspec.yaml)
+================================================================================
+
+  RUNTIME DEPENDENCIES:
+  ─────────────────────
+
+  flutter (sdk: flutter)
+    - The core Flutter framework from Google
+    - Used for all UI rendering, widget lifecycle, and Material Design
+
+  cupertino_icons: ^1.0.8
+    - iOS-style icon set bundled with Flutter
+    - Enables CupertinoIcons class usage (optional, included by default)
+
+  mobile_scanner: ^7.2.0
+    - Camera-based QR code / barcode scanner
+    - Used in: qr_scanner_screen.dart
+    - Wraps MLKit (Android) / Vision (iOS) for real-time detection
+    - Provides: MobileScannerController, BarcodeCapture, Barcode types
+
+  nearby_connections: ^4.3.0
+    - Wrapper around Google's Nearby Connections API
+    - Used in: qr_scanner_screen.dart, receive_screen.dart, payment_screen.dart
+    - Supports Bluetooth + WiFi Direct peer-to-peer communication
+    - Strategy used: Strategy.P2P_CLUSTER
+    - Provides: Nearby(), startDiscovery(), startAdvertising(),
+      requestConnection(), acceptConnection(), sendBytesPayload(),
+      disconnectFromEndpoint(), PayloadType.BYTES
+
+  qr_flutter: ^4.1.0
+    - QR code image generator widget
+    - Used in: receive_screen.dart
+    - Provides: QrImageView, QrVersions.auto, QrEyeStyle, QrDataModuleStyle
+    - Renders circular-dot styled QR codes embedded in the receive card
+
+  provider: ^6.1.5+1
+    - Flutter state management solution
+    - Used throughout the entire app
+    - Pattern: ChangeNotifier + ChangeNotifierProvider + Consumer<T>
+    - Providers registered: AppState, SmsQueueService
+    - Used via: MultiProvider, Provider.of<T>(), Consumer<T>, context.watch<T>()
+
+  permission_handler: ^12.0.1
+    - Runtime permission request handling for Android/iOS
+    - Used in: qr_scanner_screen.dart, receive_screen.dart, sms_queue_service.dart
+    - Permissions requested:
+        * Permission.bluetooth
+        * Permission.bluetoothAdvertise
+        * Permission.bluetoothConnect
+        * Permission.bluetoothScan
+        * Permission.location
+        * Permission.nearbyWifiDevices
+        * Permission.sms
+
+  url_launcher: ^6.3.2
+    - Opens external URLs, phone dialers, email clients
+    - Imported in help_support_screen.dart (currently simulated with SnackBar)
+    - Would be used for: launchUrl(Uri.parse('tel:XXXXXXXXXX'))
+
+  background_sms: ^0.0.4
+    - Sends SMS messages silently in the background without user interaction
+    - Used in: sms_queue_service.dart
+    - Provides: BackgroundSms.sendMessage(), SmsStatus.sent
+    - This is the core relay mechanism for offline payment notifications
+
+  shared_preferences: ^2.5.5
+    - Lightweight local key-value storage (wraps Android SharedPreferences)
+    - Used in: app_state.dart, balance_card.dart, pin_verification_screen.dart,
+               sms_queue_service.dart, main.dart
+    - Stores: userName, email, phone, PIN, balance, transactions (JSON),
+              endpointId, locale, pending SMS queue
+
+  connectivity_plus: ^6.1.4
+    - Monitors network/connectivity changes
+    - Used in: sms_queue_service.dart
+    - Listens for connectivity transitions to trigger SMS queue flush
+    - Note: Does NOT reliably detect GSM-only mode — airplane mode check
+      is done natively via MethodChannel instead
+
+  flutter_localizations (sdk: flutter)
+    - Flutter's built-in localization support framework
+    - Used as the base for the custom AppLocalizations class
+    - Languages supported: English (en), Hindi (hi), Kannada (kn)
+
+  DEV DEPENDENCIES:
+  ─────────────────
+
+  flutter_test (sdk: flutter)
+    - Flutter's testing framework
+
+  flutter_lints: ^6.0.0
+    - Recommended lint rules for Dart/Flutter code quality
+    - Config in: analysis_options.yaml
+
+  flutter_launcher_icons: ^0.14.4
+    - Generates Android and iOS launcher icons from a source image
+    - Config in pubspec.yaml: image_path: "assets/logo/logo.jpg"
+    - Generates: @mipmap/launcher_icon on Android
+
+================================================================================
+4. ANDROID NATIVE LAYER (Kotlin)
+================================================================================
+
+  The app has 3 native Kotlin files that bridge Android APIs to Flutter:
+
+  4.1 MainActivity.kt
+  ───────────────────
+  - Extends FlutterActivity (Flutter's Android entry point)
+  - Registers 3 platform channels:
+
+    a) AUDIO CHANNEL: "com.example.bluepay/audio"
+       - MethodChannel for playing the success sound
+       - Method: "playSuccessSound"
+       - Implementation: Android MediaPlayer + FlutterInjector to load
+         assets/audio/success.mp3
+
+    b) SYSTEM CHANNEL: "com.example.bluepay/system"
+       - MethodChannel for reading Android system settings
+       - Method: "isAirplaneModeOn"
+       - Implementation: Settings.Global.AIRPLANE_MODE_ON query
+       - Used by SmsQueueService to decide whether to queue or send SMS
+
+    c) SMS EVENT CHANNEL: "com.example.bluepay/sms_events"
+       - EventChannel for streaming incoming BPAY SMS events to Flutter
+       - Stream handler: SmsEventStreamHandler (singleton object)
+
+  4.2 SmsBalanceReceiver.kt
+  ─────────────────────────
+  - Android BroadcastReceiver registered for SMS_RECEIVED intent
+  - Filters incoming SMS for messages starting with "BPAY "
+  - Format: "BPAY S/R {txn_id} {amount} {newBalance}"
+  - When a BPAY SMS is detected → calls SmsEventStreamHandler.emit()
+  - Registered in AndroidManifest.xml with priority 1000
+
+  4.3 SmsEventStreamHandler.kt
+  ─────────────────────────────
+  - Kotlin singleton object implementing EventChannel.StreamHandler
+  - Bridges SmsBalanceReceiver → Flutter EventChannel
+  - emit() is dispatched on the main thread via Handler(Looper.getMainLooper())
+  - Flutter's SmsBalanceService listens to this stream
+
+================================================================================
+5. ANDROID MANIFEST PERMISSIONS
+================================================================================
+
+  Camera:
+    android.permission.CAMERA                  (QR scanning)
+
+  Bluetooth / Nearby (Nearby Connections):
+    android.permission.BLUETOOTH
+    android.permission.BLUETOOTH_ADMIN
+    android.permission.ACCESS_WIFI_STATE
+    android.permission.CHANGE_WIFI_STATE
+    android.permission.ACCESS_COARSE_LOCATION
+    android.permission.ACCESS_FINE_LOCATION
+    android.permission.BLUETOOTH_ADVERTISE     (Android 12+)
+    android.permission.BLUETOOTH_CONNECT       (Android 12+)
+    android.permission.BLUETOOTH_SCAN          (Android 12+)
+    android.permission.NEARBY_WIFI_DEVICES     (Android 13+)
+
+  SMS:
+    android.permission.SEND_SMS
+    android.permission.RECEIVE_SMS
+    android.permission.READ_SMS
+
+================================================================================
+6. FILE-BY-FILE EXPLANATION
+================================================================================
+
+  lib/main.dart
+  ─────────────
+  - App entry point
+  - Initializes SmsQueueService and SmsBalanceService singletons before
+    runApp() is called
+  - Wraps app in MultiProvider with AppState + SmsQueueService
+  - MyApp listens for balance-update SMS events and shows SnackBars
+  - SplashScreen: 2-second branded splash → checks SharedPreferences for
+    PIN → routes to RegisterScreen (first time) or HomeScreen (returning user)
+  - Splash gradient: light blue (#4FC3F7) → dark blue (#1565C0)
+
+  lib/state/app_state.dart
+  ─────────────────────────
+  - Central state store extending ChangeNotifier
+  - Models: Transaction (id, counterpartName, amount, isPositive, date)
+  - Persisted fields (SharedPreferences): name, email, phone, pin, address,
+    endpointId, balance, transactions (JSON array), locale
+  - Key methods:
+      registerUser()          - first-time registration
+      saveProfileData()       - edit profile update
+      saveAddress()           - address update
+      setLocale()             - language change
+      receiveMoney()          - credit balance + add transaction (with duplicate guard)
+      sendMoney()             - debit balance + add transaction (with duplicate guard)
+      syncBalance()           - overwrite balance from server-confirmed SMS
+  - Generates a random 6-digit endpointId on first launch, persists it
+
+  lib/services/sms_queue_service.dart
+  ─────────────────────────────────────
+  - Singleton ChangeNotifier managing the outgoing SMS queue
+  - Architecture: airplane mode as proxy for "can send SMS"
+    (connectivity_plus alone doesn't reliably detect GSM-only availability)
+  - Uses native MethodChannel "com.example.bluepay/system" to read
+    Settings.Global.AIRPLANE_MODE_ON
+  - Queue flushed on: connectivity change (none→any), 30s periodic timer,
+    app startup if airplane mode is already off
+  - PendingSms model: {phoneNumber, body} — serialized to JSON in SharedPrefs
+  - SMS body format (JSON):
+    {"txn_id":"TXN...","senderId":"phone","receiverId":"phone","amount":500}
+  - Relay phone number hardcoded: 6360139965
+
+  lib/services/sms_balance_service.dart
+  ───────────────────────────────────────
+  - Singleton that listens to the native EventChannel for incoming BPAY SMS
+  - Parses "BPAY S/R {txn_id} {amount} {newBalance}" format
+  - Exposes Stream<BpayBalanceUpdate> for AppState to listen to
+  - 'S' type = sender confirmation, 'R' type = receiver credit
+
+  lib/home_screen.dart (LARGEST FILE — 1481 lines)
+  ─────────────────────────────────────────────────
+  Contains 9 classes/widgets in a single file:
+
+  a) HomeScreen (StatefulWidget)
+     - Bottom navigation shell with 4 tabs (IndexedStack)
+     - Tabs: Home, Dialpad, Wallet, History
+     - Bottom nav shows orange badge on Dialpad when SMS queue has pending items
+     - Uses Consumer<SmsQueueService> for real-time badge updates
+
+  b) HomeDashboard (StatelessWidget)
+     - Main home tab
+     - Header: avatar circle (first letter of name) → taps to ProfileScreen
+     - Pending SMS banner (orange, shown only when queue > 0)
+     - BalanceCard widget
+     - Send/Receive action buttons
+     - Transaction history list (recent, scrollable)
+
+  c) DialpadScreen (StatefulWidget)
+     - Phone-style numeric keypad (0–9, *, #)
+     - USSD payment pattern: *#<amount>#<phonenumber>#
+     - Auto-detects pattern via RegExp, shows confirm dialog after 120ms delay
+     - On confirm: deducts balance, enqueues JSON SMS to relay phone
+     - Hint banner explains the USSD format to users
+
+  d) WalletScreen (StatelessWidget)
+     - Premium dark green header card showing available balance
+     - Shows INCOME and EXPENSE totals computed from transaction list
+     - Stat cards: total transactions count + pending SMS count
+     - Account info section: name, email, phone, endpoint ID
+
+  e) HistoryScreen (StatefulWidget)
+     - Transaction list with filter tabs: All / Sent / Received
+     - Shows transaction count
+     - Each row: icon, name, date, amount with color coding (green/red)
+     - Empty state with icon + localized message
+
+  f) _TxnCard, _FilterTab, _StatCard, _InfoCard, _InfoRow, _WalletSummaryItem
+     - Private reusable sub-widgets used within the home screen tabs
+     - Consistent black-bordered flat design aesthetic
+
+  g) TransactionItem
+     - Used in HomeDashboard's recent transaction list
+     - Slightly different layout from _TxnCard (simpler)
+
+  h) _LanguageSwitcherRow
+     - Language dropdown supporting English, Hindi, Kannada
+     - Uses Consumer<AppState> to show/update current locale
+
+  lib/qr_scanner_screen.dart
+  ───────────────────────────
+  - Camera QR scanner using MobileScannerController
+  - Animated scanning line (green gradient, bounces up-down via AnimationController)
+  - Custom CornerBracketPainter (CustomPainter) draws scanner frame corners
+  - On QR detected → parses JSON (expects {phone, name}) or falls back to raw string
+  - Connects via Nearby Connections P2P_CLUSTER discovery
+  - On connection success → navigates to PinVerificationScreen
+  - Requests: Bluetooth, BT Advertise/Connect/Scan, Location, NearbyWifi permissions
+
+  lib/receive_screen.dart
+  ────────────────────────
+  - Starts Nearby Connections advertising on screen open
+  - Displays QR code (generated from {phone, name} JSON) for sender to scan
+  - Premium dark green card with corner bracket decorations (same CornerBracketPainter)
+  - On payment received (BYTES payload):
+      1. Parses JSON
+      2. Idempotency check (duplicate txn_id guard)
+      3. Credits AppState.receiveMoney()
+      4. Enqueues redundant SMS to backend (receiver-side confirmation)
+      5. Shows TransactionSuccessAnimation overlay
+  - Stops advertising on dispose()
+
+  lib/pin_verification_screen.dart
+  ─────────────────────────────────
+  - Security gate between QR scan and actual payment
+  - 4-digit PIN entry (obscured)
+  - Verifies against SharedPreferences stored PIN (not AppState — ground truth)
+  - On success → navigates to PaymentScreen (pushReplacement)
+  - On failure → shows error SnackBar, clears field
+
+  lib/payment_screen.dart
+  ────────────────────────
+  - Amount entry screen (reached after PIN verification)
+  - Sends money via: Nearby().sendBytesPayload() (Uint8List of JSON)
+  - JSON payload: {txn_id, amount, senderPhone, senderName}
+  - Also: deducts AppState balance + enqueues SMS to backend
+  - Shows TransactionSuccessAnimation on success → disconnects → goes home
+  - txnId format: "TXN{milliseconds}{random4hexChars}"
+
+  lib/balance_card.dart
+  ──────────────────────
+  - Reusable dark card (color #222232) showing balance
+  - Balance hidden by default → shows "₹••••••••"
+  - "Show balance" button → triggers PIN dialog (AlertDialog)
+  - PIN verified against SharedPreferences directly
+  - Account number displayed as "******{last4digits}"
+  - Decorative overlapping circles logo (light blue + dark blue)
+  - Active status badge in lime green
+
+  lib/register_screen.dart
+  ─────────────────────────
+  - First-run registration form: Name, Email, Phone, 4-digit PIN
+  - Validates all fields + PIN length ≥ 4
+  - Writes directly to SharedPreferences (ground truth)
+  - Also updates AppState in-memory + calls notifyListeners()
+  - Navigates to HomeScreen on success
+
+  lib/profile_screen.dart
+  ────────────────────────
+  - Dark green header with avatar (first letter of name), email, phone, address
+  - Shows BalanceCard widget
+  - Menu items: Edit Profile, Address Management, Help & Support,
+                Change Language, Log out
+  - Language picker via AlertDialog with 3 options
+
+  lib/edit_profile_screen.dart
+  ─────────────────────────────
+  - Edits name, email, phone via AppState.saveProfileData()
+  - Pre-fills from current AppState values
+  - Clean input fields with grey fill, no border
+
+  lib/address_management_screen.dart
+  ───────────────────────────────────
+  - Multi-line address text field
+  - Saves via AppState.saveAddress()
+  - Simple form with Save button
+
+  lib/help_support_screen.dart
+  ──────────────────────────────
+  - Static help page with support number (currently simulated)
+  - FAQ section using ExpansionTile (collapsible Q&A)
+  - Uses url_launcher pattern (commented, simulated via SnackBar)
+
+  lib/success_animation.dart
+  ───────────────────────────
+  - Full-screen overlay widget shown after successful payment
+  - Elastic scale-in animation on green checkmark circle (600ms)
+  - Plays success sound via MethodChannel "com.example.bluepay/audio"
+  - Auto-dismisses after 2 seconds, calls onComplete() callback
+  - showSuccessAnimation() helper function uses showGeneralDialog()
+
+  lib/l10n/app_localizations.dart
+  ────────────────────────────────
+  - Custom localization system (NOT using Flutter's gen-l10n / intl)
+  - AppLocalizations class reads locale from AppState via context.watch<AppState>()
+  - Contains a static Map<String, Map<String, String>> with all translations
+  - Languages: English (en), Hindi (hi), Kannada (kn)
+  - 35+ localized string keys
+  - Extension: BuildContext.l10n → shorthand getter
+  - Usage: context.l10n.sendMoney, context.l10n.wallet, etc.
+
+================================================================================
+7. PAYMENT FLOW (End-to-End)
+================================================================================
+
+  SENDER FLOW:
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  HomeDashboard → [Send Money] → QRScannerScreen                      │
+  │    → (scan receiver QR) → Nearby Discovery starts                   │
+  │    → Endpoint found → requestConnection() → acceptConnection()       │
+  │    → Connected → PinVerificationScreen                               │
+  │    → PIN correct → PaymentScreen                                     │
+  │    → Enter amount → sendBytesPayload() → AppState.sendMoney()        │
+  │    → SmsQueueService.enqueue(JSON) → SuccessAnimation → Home         │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  RECEIVER FLOW:
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  HomeDashboard → [Receive Money] → ReceiveScreen                     │
+  │    → Nearby Advertising starts (phone number as identity)            │
+  │    → QR code displayed (JSON: {phone, name})                         │
+  │    → Sender scans + connects → acceptConnection()                    │
+  │    → BYTES payload received → _handleIncomingPayment()              │
+  │    → AppState.receiveMoney() → SmsQueueService.enqueue(JSON)         │
+  │    → SuccessAnimation → Home                                          │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  DIALPAD / USSD FALLBACK (offline only):
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  HomeScreen [Dialpad tab] → type *#500#9876543210#                   │
+  │    → Auto-detected by RegExp → Confirm dialog                        │
+  │    → AppState.sendMoney() → SmsQueueService.enqueue(JSON)            │
+  │    → SMS sent/queued to relay phone 6360139965                       │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  SMS BACKEND RELAY:
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  BluePay app → SMS to relay phone (6360139965) with JSON payload     │
+  │  Relay app processes txn → sends back:                               │
+  │    "BPAY S {txn_id} {amount} {newBalance}" → to SENDER              │
+  │    "BPAY R {txn_id} {amount} {newBalance}" → to RECEIVER            │
+  │  SmsBalanceReceiver (BroadcastReceiver) detects BPAY SMS             │
+  │  → SmsEventStreamHandler.emit() → Flutter EventChannel              │
+  │  → SmsBalanceService parses → AppState.syncBalance()                │
+  │  → UI updated with server-confirmed balance                          │
+  └──────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+8. OFFLINE HANDLING STRATEGY
+================================================================================
+
+  The app uses a layered offline strategy:
+
+  Layer 1 — Peer-to-Peer (Bluetooth/WiFi Direct):
+    - Money transferred device-to-device via Nearby Connections
+    - No internet needed AT ALL for the actual transfer
+    - Both parties see immediate balance change in their local AppState
+
+  Layer 2 — SMS Queue (GSM Relay):
+    - After every transaction, a JSON SMS is sent to the relay phone
+    - If airplane mode is ON → SMS is persisted to SharedPreferences queue
+    - When airplane mode turns OFF → queue auto-flushes
+    - Safety net: 30-second periodic timer checks and flushes if possible
+    - Airplane mode detected natively (Settings.Global.AIRPLANE_MODE_ON)
+      NOT via connectivity_plus (which only tracks internet data, not GSM radio)
+
+  Layer 3 — USSD Dialpad:
+    - If Bluetooth/WiFi is unavailable, user can manually type USSD pattern
+    - *#<amount>#<phonenumber># → triggers SMS-only payment
+    - Backend processes and confirms via return SMS
+
+================================================================================
+9. IDEMPOTENCY & DUPLICATE PREVENTION
+================================================================================
+
+  Transaction IDs:
+    - Format: "TXN{System.currentTimeMillis()}{random4hex}"
+    - Generated by SENDER before sending
+    - Same txnId used in: Nearby payload, SMS to backend, AppState record
+
+  Duplicate Guards:
+    - AppState.receiveMoney() checks if txnId already exists in transactions list
+    - AppState.sendMoney() same check
+    - If duplicate → logs warning, returns without double-crediting/debiting
+
+================================================================================
+10. LOCALIZATION SYSTEM
+================================================================================
+
+  Supported Languages:
+    - English (en) — default
+    - Hindi (hi) — हिंदी
+    - Kannada (kn) — ಕನ್ನಡ
+
+  How it works:
+    - AppState stores locale string ('en', 'hi', 'kn') in SharedPreferences
+    - AppLocalizations.of(context) reads locale via context.watch<AppState>()
+    - All UI strings fetched via: context.l10n.<stringKey>
+    - Falls back to English if key missing in target locale
+
+  Covered strings (35+):
+    home, dialpad, wallet, history, sendMoney, receiveMoney, scanQrToPay,
+    accountInfo, name, phone, email, endpointId, quickActions, myQrCode,
+    changeLanguage, language, totalBalance, transactionHistory, all, sent,
+    received, noTransactionsYet, noSentTransactions, noReceivedTransactions,
+    transactionsWillAppearHere, paying, amount, enterAmount, send,
+    insufficientBalance, waitingForSender, ensureBluetoothWifiOn, showThisQr,
+    scanQrCode, alignQrInsideFrame, editProfile, addressManagement,
+    helpAndSupport, logout, save, pendingSms, sendingNow, queuedWaitingForGsm,
+    hintDialpad, clear, enterNumber
+
+================================================================================
+11. DESIGN SYSTEM & UI AESTHETICS
+================================================================================
+
+  Color Palette:
+    - Background (main):  #F8F9FA (near-white grey)
+    - Balance Card:        #222232 (dark navy/charcoal)
+    - Wallet Header:       #1B4332 (deep forest green)
+    - Accent Green:        #7ED957 (neon lime green)
+    - Profile Header:      #028800D (dark green, slightly off)
+    - Avatar (home):       #75B9FB (soft blue)
+    - Active Badge:        lightGreenAccent
+    - Borders:             Colors.black, width 1.5 (flat design system)
+    - Error/Sent:          #E53935 (material red)
+    - Received/Success:    Colors.green
+
+  Design Language:
+    - Flat, high-contrast black borders on all cards (like bordered neobrutalism)
+    - White cards on light grey page background
+    - Circular icon bubbles with black border
+    - Corner bracket QR decorations (CustomPainter CornerBracketPainter)
+    - AnimatedContainer for filter tab transitions (200ms)
+    - Elastic scale animation on success overlay
+
+  Assets:
+    - assets/audio/success.mp3  — played on successful transaction
+    - assets/logo/logo.jpg      — splash screen + launcher icon
+
+================================================================================
+12. THINGS NOT YET IMPLEMENTED / SIMULATED
+================================================================================
+
+  1. url_launcher for Help & Support phone call
+     - Currently shows a SnackBar "Calling 0000000000..."
+     - Should use: launchUrl(Uri.parse('tel:XXXXXXXXXX'))
+
+  2. Log out functionality
+     - Button exists in Profile screen but onTap is null
+     - Should clear SharedPreferences + navigate to RegisterScreen
+
+  3. iOS support
+     - Nearby Connections (Google) is Android-only
+     - background_sms is Android-only
+     - The app is effectively Android-only despite pubspec having ios config
+
+  4. Real bank backend
+     - Relay phone number is hardcoded (6360139965)
+     - The relay app (separate system) processes JSON SMS and replies with BPAY SMS
+
+  5. PIN change / reset
+     - Profile has no PIN change option
+     - Help FAQ mentions it but no implementation
+
+  6. Language switcher in home screen
+     - _LanguageSwitcherRow class exists in home_screen.dart but is
+       not placed in any navigation tab (dead code — language is changed
+       via Profile → Change Language instead)
+
+================================================================================
+13. PROJECT FILE STRUCTURE
+================================================================================
+
+  bluepay/
+  ├── lib/
+  │   ├── main.dart                        (App entry, splash, routing)
+  │   ├── home_screen.dart                 (Home, Dialpad, Wallet, History tabs)
+  │   ├── register_screen.dart             (First-run registration)
+  │   ├── profile_screen.dart              (Profile page)
+  │   ├── edit_profile_screen.dart         (Edit name/email/phone)
+  │   ├── address_management_screen.dart   (Address input)
+  │   ├── help_support_screen.dart         (FAQ + helpline)
+  │   ├── balance_card.dart                (PIN-protected balance widget)
+  │   ├── qr_scanner_screen.dart           (Camera QR + Nearby discovery)
+  │   ├── receive_screen.dart              (QR display + Nearby advertising)
+  │   ├── pin_verification_screen.dart     (PIN security gate)
+  │   ├── payment_screen.dart              (Amount entry + payment execution)
+  │   ├── success_animation.dart           (Post-payment success overlay)
+  │   ├── state/
+  │   │   └── app_state.dart               (Global ChangeNotifier state)
+  │   ├── services/
+  │   │   ├── sms_queue_service.dart       (SMS queuing + airplane mode logic)
+  │   │   └── sms_balance_service.dart     (Incoming BPAY SMS listener)
+  │   └── l10n/
+  │       └── app_localizations.dart       (Custom EN/HI/KN localization)
+  │
+  ├── android/
+  │   └── app/src/main/
+  │       ├── AndroidManifest.xml          (Permissions + BroadcastReceiver)
+  │       └── kotlin/com/example/bluepay/
+  │           ├── MainActivity.kt          (3 platform channels: audio/system/sms)
+  │           ├── SmsBalanceReceiver.kt    (BroadcastReceiver for BPAY SMS)
+  │           └── SmsEventStreamHandler.kt (EventChannel sink singleton)
+  │
+  ├── assets/
+  │   ├── audio/success.mp3
+  │   └── logo/logo.jpg
+  │
+  └── pubspec.yaml                         (Dependencies + asset declarations)
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================

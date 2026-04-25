@@ -6,6 +6,7 @@ import 'register_screen.dart';
 import 'state/app_state.dart';
 import 'services/sms_queue_service.dart';
 import 'services/sms_balance_service.dart';
+import 'services/radar_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AppState()),
         // Expose the already-initialized singleton so widgets can listen to it
         ChangeNotifierProvider<SmsQueueService>.value(value: SmsQueueService.instance),
+        ChangeNotifierProvider(create: (_) => RadarService()),
       ],
       child: const MyApp(),
     ),

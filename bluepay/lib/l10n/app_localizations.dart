@@ -58,6 +58,19 @@ class AppLocalizations {
 
   String get editProfile => _localizedValues[locale]?['editProfile'] ?? _localizedValues['en']!['editProfile']!;
   String get addressManagement => _localizedValues[locale]?['addressManagement'] ?? _localizedValues['en']!['addressManagement']!;
+  String get tutorial => _localizedValues[locale]?['tutorial'] ?? _localizedValues['en']!['tutorial']!;
+  String get tutorialTitle => _localizedValues[locale]?['tutorialTitle'] ?? _localizedValues['en']!['tutorialTitle']!;
+  String get tutorialSubtitle => _localizedValues[locale]?['tutorialSubtitle'] ?? _localizedValues['en']!['tutorialSubtitle']!;
+  String get tutorialStep1Title => _localizedValues[locale]?['tutorialStep1Title'] ?? _localizedValues['en']!['tutorialStep1Title']!;
+  String get tutorialStep1Desc => _localizedValues[locale]?['tutorialStep1Desc'] ?? _localizedValues['en']!['tutorialStep1Desc']!;
+  String get tutorialStep2Title => _localizedValues[locale]?['tutorialStep2Title'] ?? _localizedValues['en']!['tutorialStep2Title']!;
+  String get tutorialStep2Desc => _localizedValues[locale]?['tutorialStep2Desc'] ?? _localizedValues['en']!['tutorialStep2Desc']!;
+  String get tutorialStep3Title => _localizedValues[locale]?['tutorialStep3Title'] ?? _localizedValues['en']!['tutorialStep3Title']!;
+  String get tutorialStep3Desc => _localizedValues[locale]?['tutorialStep3Desc'] ?? _localizedValues['en']!['tutorialStep3Desc']!;
+  String get tutorialStep4Title => _localizedValues[locale]?['tutorialStep4Title'] ?? _localizedValues['en']!['tutorialStep4Title']!;
+  String get tutorialStep4Desc => _localizedValues[locale]?['tutorialStep4Desc'] ?? _localizedValues['en']!['tutorialStep4Desc']!;
+  String get tutorialStep5Title => _localizedValues[locale]?['tutorialStep5Title'] ?? _localizedValues['en']!['tutorialStep5Title']!;
+  String get tutorialStep5Desc => _localizedValues[locale]?['tutorialStep5Desc'] ?? _localizedValues['en']!['tutorialStep5Desc']!;
   String get helpAndSupport => _localizedValues[locale]?['helpAndSupport'] ?? _localizedValues['en']!['helpAndSupport']!;
   String get logout => _localizedValues[locale]?['logout'] ?? _localizedValues['en']!['logout']!;
   String get save => _localizedValues[locale]?['save'] ?? _localizedValues['en']!['save']!;
@@ -67,6 +80,13 @@ class AppLocalizations {
   String get hintDialpad => _localizedValues[locale]?['hintDialpad'] ?? _localizedValues['en']!['hintDialpad']!;
   String get clear => _localizedValues[locale]?['clear'] ?? _localizedValues['en']!['clear']!;
   String get enterNumber => _localizedValues[locale]?['enterNumber'] ?? _localizedValues['en']!['enterNumber']!;
+
+  // Radar
+  String get scanningNearby => _localizedValues[locale]?['scanningNearby'] ?? _localizedValues['en']!['scanningNearby']!;
+  String get usersNearby => _localizedValues[locale]?['usersNearby'] ?? _localizedValues['en']!['usersNearby']!;
+  String get noUsersNearby => _localizedValues[locale]?['noUsersNearby'] ?? _localizedValues['en']!['noUsersNearby']!;
+  String get radarPermissionNeeded => _localizedValues[locale]?['radarPermissionNeeded'] ?? _localizedValues['en']!['radarPermissionNeeded']!;
+  String get rescan => _localizedValues[locale]?['rescan'] ?? _localizedValues['en']!['rescan']!;
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
@@ -107,6 +127,19 @@ class AppLocalizations {
       'alignQrInsideFrame': 'Align QR code inside the frame to scan.',
       'editProfile': 'Edit Profile',
       'addressManagement': 'Address Management',
+      'tutorial': 'Tutorial',
+      'tutorialTitle': 'How to use BluePay',
+      'tutorialSubtitle': 'Welcome to BluePay! Here are some simple steps to get you started with sending and receiving money.',
+      'tutorialStep1Title': '1. Scan & Pay',
+      'tutorialStep1Desc': 'Tap on "Scan QR to Pay" on the home screen to quickly pay anyone by scanning their QR code.',
+      'tutorialStep2Title': '2. Send Money',
+      'tutorialStep2Desc': 'Use the "Send Money" option to transfer funds. Enter the amount and the recipient\'s details, then confirm.',
+      'tutorialStep3Title': '3. Receive Money',
+      'tutorialStep3Desc': 'Tap on "Receive Money" to generate your personal QR code. Show this to the sender to receive funds.',
+      'tutorialStep4Title': '4. Check History',
+      'tutorialStep4Desc': 'View all your past transactions by tapping on the "History" tab on the home screen.',
+      'tutorialStep5Title': '5. Offline Payments',
+      'tutorialStep5Desc': 'No internet? No problem! Use our Dialpad feature to send money via SMS/USSD fallback.',
       'helpAndSupport': 'Help & Support',
       'logout': 'Log out',
       'save': 'Save',
@@ -116,6 +149,11 @@ class AppLocalizations {
       'hintDialpad': 'Use pattern *#amount#phonenumber# to send money via USSD/SMS fallback if offline.',
       'clear': 'Clear',
       'enterNumber': '*#amount#phonenumber#',
+      'scanningNearby': 'Scanning for nearby users...',
+      'usersNearby': 'user(s) nearby — tap Send to pay!',
+      'noUsersNearby': 'No BluePay users nearby',
+      'radarPermissionNeeded': 'Enable Bluetooth & Location for radar',
+      'rescan': 'Rescan',
     },
     'hi': {
       'home': 'होम',
@@ -155,6 +193,19 @@ class AppLocalizations {
       'alignQrInsideFrame': 'स्कैन करने के लिए क्यूआर कोड को फ्रेम के अंदर संरेखित करें।',
       'editProfile': 'प्रोफाइल संपादित करें',
       'addressManagement': 'पता प्रबंधन',
+      'tutorial': 'ट्यूटोरियल',
+      'tutorialTitle': 'BluePay का उपयोग कैसे करें',
+      'tutorialSubtitle': 'BluePay में आपका स्वागत है! पैसे भेजने और प्राप्त करने के लिए यहाँ कुछ सरल चरण दिए गए हैं।',
+      'tutorialStep1Title': '1. स्कैन और भुगतान',
+      'tutorialStep1Desc': 'किसी को भी उनके क्यूआर कोड को स्कैन करके जल्दी से भुगतान करने के लिए होम स्क्रीन पर "स्कैन करके भुगतान करें" पर टैप करें।',
+      'tutorialStep2Title': '2. पैसे भेजें',
+      'tutorialStep2Desc': 'धन हस्तांतरित करने के लिए "पैसे भेजें" विकल्प का उपयोग करें। राशि और प्राप्तकर्ता का विवरण दर्ज करें, फिर पुष्टि करें।',
+      'tutorialStep3Title': '3. पैसे प्राप्त करें',
+      'tutorialStep3Desc': 'अपना व्यक्तिगत क्यूआर कोड जनरेट करने के लिए "पैसे प्राप्त करें" पर टैप करें। पैसे प्राप्त करने के लिए इसे भेजने वाले को दिखाएं।',
+      'tutorialStep4Title': '4. इतिहास जांचें',
+      'tutorialStep4Desc': 'होम स्क्रीन पर "इतिहास" टैब पर टैप करके अपने सभी पिछले लेनदेन देखें।',
+      'tutorialStep5Title': '5. ऑफ़लाइन भुगतान',
+      'tutorialStep5Desc': 'कोई इंटरनेट नहीं? कोई बात नहीं! SMS/USSD फ़ॉलबैक के माध्यम से पैसे भेजने के लिए हमारे डायलपैड सुविधा का उपयोग करें।',
       'helpAndSupport': 'सहायता और समर्थन',
       'logout': 'लॉग आउट',
       'save': 'सहेजें',
@@ -164,6 +215,11 @@ class AppLocalizations {
       'hintDialpad': 'यदि ऑफ़लाइन हैं तो USSD/SMS फ़ॉलबैक के माध्यम से पैसे भेजने के लिए मैन्युअल रूप से मोबाइल नंबर दर्ज करें।',
       'clear': 'साफ़ करें',
       'enterNumber': 'नंबर दर्ज करें',
+      'scanningNearby': 'आस-पास के उपयोगकर्ताओं को खोज रहे हैं...',
+      'usersNearby': 'उपयोगकर्ता पास में हैं — भेजने के लिए टैप करें!',
+      'noUsersNearby': 'पास में कोई BluePay उपयोगकर्ता नहीं',
+      'radarPermissionNeeded': 'रडार के लिए Bluetooth और Location चालू करें',
+      'rescan': 'फिर से स्कैन करें',
     },
     'kn': {
       'home': 'ಮುಖಪುಟ',
@@ -203,6 +259,19 @@ class AppLocalizations {
       'alignQrInsideFrame': 'ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ಫ್ರೇಮ್ ಒಳಗೆ ಕ್ಯೂಆರ್ ಕೋಡ್ ಅನ್ನು ಹೊಂದಿಸಿ.',
       'editProfile': 'ಪ್ರೊಫೈಲ್ ಸಂಪಾದಿಸಿ',
       'addressManagement': 'ವಿಳಾಸ ನಿರ್ವಹಣೆ',
+      'tutorial': 'ಟ್ಯುಟೋರಿಯಲ್',
+      'tutorialTitle': 'BluePay ಅನ್ನು ಹೇಗೆ ಬಳಸುವುದು',
+      'tutorialSubtitle': 'BluePay ಗೆ ಸುಸ್ವಾಗತ! ಹಣವನ್ನು ಕಳುಹಿಸಲು ಮತ್ತು ಸ್ವೀಕರಿಸಲು ಪ್ರಾರಂಭಿಸಲು ಇಲ್ಲಿದೆ ಕೆಲವು ಸರಳ ಹಂತಗಳು.',
+      'tutorialStep1Title': '1. ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಪಾವತಿಸಿ',
+      'tutorialStep1Desc': 'ಯಾರದ್ದೇ ಕ್ಯೂಆರ್ ಕೋಡ್ ಅನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡುವ ಮೂಲಕ ತ್ವರಿತವಾಗಿ ಹಣ ಪಾವತಿಸಲು ಮುಖಪುಟದಲ್ಲಿ "ಪಾವತಿಸಲು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ" ಟ್ಯಾಪ್ ಮಾಡಿ.',
+      'tutorialStep2Title': '2. ಹಣ ಕಳುಹಿಸಿ',
+      'tutorialStep2Desc': 'ಹಣ ವರ್ಗಾಯಿಸಲು "ಹಣ ಕಳುಹಿಸಿ" ಆಯ್ಕೆಯನ್ನು ಬಳಸಿ. ಮೊತ್ತವನ್ನು ಮತ್ತು ಪಡೆಯುವವರ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ, ನಂತರ ಖಚಿತಪಡಿಸಿ.',
+      'tutorialStep3Title': '3. ಹಣ ಸ್ವೀಕರಿಸಿ',
+      'tutorialStep3Desc': 'ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಕ್ಯೂಆರ್ ಕೋಡ್ ಪಡೆಯಲು "ಹಣ ಸ್ವೀಕರಿಸಿ" ಟ್ಯಾಪ್ ಮಾಡಿ. ಹಣ ಸ್ವೀಕರಿಸಲು ಇದನ್ನು ಕಳುಹಿಸುವವರಿಗೆ ತೋರಿಸಿ.',
+      'tutorialStep4Title': '4. ಇತಿಹಾಸ ಪರಿಶೀಲಿಸಿ',
+      'tutorialStep4Desc': 'ಮುಖಪುಟದಲ್ಲಿರುವ "ಇತಿಹಾಸ" ಟ್ಯಾಬ್ ಮೇಲೆ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ಎಲ್ಲಾ ಹಿಂದಿನ ವಹಿವಾಟುಗಳನ್ನು ವೀಕ್ಷಿಸಿ.',
+      'tutorialStep5Title': '5. ಆಫ್‌ಲೈನ್ ಪಾವತಿಗಳು',
+      'tutorialStep5Desc': 'ಇಂಟರ್ನೆಟ್ ಇಲ್ಲವೇ? ಸಮಸ್ಯೆ ಇಲ್ಲ! SMS/USSD ಫಾಲ್‌ಬ್ಯಾಕ್ ಮೂಲಕ ಹಣವನ್ನು ಕಳುಹಿಸಲು ನಮ್ಮ ಡಯಲ್‌ಪ್ಯಾಡ್ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.',
       'helpAndSupport': 'ಸಹಾಯ ಮತ್ತು ಬೆಂಬಲ',
       'logout': 'ಲಾಗ್ ಔಟ್',
       'save': 'ಉಳಿಸಿ',
@@ -212,6 +281,11 @@ class AppLocalizations {
       'hintDialpad': 'ಆಫ್‌ಲೈನ್ ಆಗಿದ್ದರೆ USSD/SMS ಫಾಲ್‌ಬ್ಯಾಕ್ ಮೂಲಕ ಹಣವನ್ನು ಕಳುಹಿಸಲು ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಹಸ್ತಚಾಲಿತವಾಗಿ ನಮೂದಿಸಿ.',
       'clear': 'ಅಳಿಸಿ',
       'enterNumber': 'ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+      'scanningNearby': 'ಹತ್ತಿರದ ಬಳಕೆದಾರರನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ...',
+      'usersNearby': 'ಬಳಕೆದಾರರು ಹತ್ತಿರದಲ್ಲಿದ್ದಾರೆ — ಕಳುಹಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ!',
+      'noUsersNearby': 'ಹತ್ತಿರದಲ್ಲಿ BluePay ಬಳಕೆದಾರರಿಲ್ಲ',
+      'radarPermissionNeeded': 'ರಾಡಾರ್ಗಾಗಿ Bluetooth ಮತ್ತು Location ಆನ್ ಮಾಡಿ',
+      'rescan': 'ಮರು-ಸ್ಕ್ಯಾನ್',
     },
   };
 }
