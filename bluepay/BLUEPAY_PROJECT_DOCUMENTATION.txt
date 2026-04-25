@@ -22,6 +22,7 @@ internet connectivity, using a clever combination of:
     happens
   - USSD-style dialpad as a fallback input method (*#amount#phone#)
   - QR Code for receiver identity sharing
+  - Connectivity Radar (ShareIt-style discovery) for fast nearby peer detection
 
 The app targets Android devices and is built to work in areas with poor or
 zero internet connectivity — a common challenge in rural India.
@@ -267,6 +268,14 @@ zero internet connectivity — a common challenge in rural India.
   - Exposes Stream<BpayBalanceUpdate> for AppState to listen to
   - 'S' type = sender confirmation, 'R' type = receiver credit
 
+  lib/services/radar_service.dart
+  ───────────────────────────────
+  - Singleton ChangeNotifier that manages the "Connectivity Radar"
+  - Implements a ShareIt-style passive discovery experience
+  - Automatically scans for nearby endpoints (users) using Nearby Connections (P2P_CLUSTER)
+  - Maintains a dynamic list of discovered users (phone numbers/aliases)
+  - Handles Android 12+ Bluetooth and nearby device permissions natively
+
   lib/home_screen.dart (LARGEST FILE — 1481 lines)
   ─────────────────────────────────────────────────
   Contains 9 classes/widgets in a single file:
@@ -431,6 +440,15 @@ zero internet connectivity — a common challenge in rural India.
   │    → PIN correct → PaymentScreen                                     │
   │    → Enter amount → sendBytesPayload() → AppState.sendMoney()        │
   │    → SmsQueueService.enqueue(JSON) → SuccessAnimation → Home         │
+  └──────────────────────────────────────────────────────────────────────┘
+
+  RADAR P2P FLOW:
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │  HomeDashboard → [Connectivity Radar]                                │
+  │    → RadarService scans & displays nearby users                      │
+  │    → Tap user from list → requestConnection()                        │
+  │    → Connected → PinVerificationScreen → PaymentScreen               │
+  │    → Enter amount → sendBytesPayload() → SuccessAnimation → Home     │
   └──────────────────────────────────────────────────────────────────────┘
 
   RECEIVER FLOW:
