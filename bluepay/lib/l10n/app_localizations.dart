@@ -81,6 +81,13 @@ class AppLocalizations {
   String get clear => _localizedValues[locale]?['clear'] ?? _localizedValues['en']!['clear']!;
   String get enterNumber => _localizedValues[locale]?['enterNumber'] ?? _localizedValues['en']!['enterNumber']!;
 
+  // Radar
+  String get scanningNearby => _localizedValues[locale]?['scanningNearby'] ?? _localizedValues['en']!['scanningNearby']!;
+  String get usersNearby => _localizedValues[locale]?['usersNearby'] ?? _localizedValues['en']!['usersNearby']!;
+  String get noUsersNearby => _localizedValues[locale]?['noUsersNearby'] ?? _localizedValues['en']!['noUsersNearby']!;
+  String get radarPermissionNeeded => _localizedValues[locale]?['radarPermissionNeeded'] ?? _localizedValues['en']!['radarPermissionNeeded']!;
+  String get rescan => _localizedValues[locale]?['rescan'] ?? _localizedValues['en']!['rescan']!;
+
   static final Map<String, Map<String, String>> _localizedValues = {
     'en': {
       'home': 'Home',
@@ -142,6 +149,11 @@ class AppLocalizations {
       'hintDialpad': 'Use pattern *#amount#phonenumber# to send money via USSD/SMS fallback if offline.',
       'clear': 'Clear',
       'enterNumber': '*#amount#phonenumber#',
+      'scanningNearby': 'Scanning for nearby users...',
+      'usersNearby': 'user(s) nearby — tap Send to pay!',
+      'noUsersNearby': 'No BluePay users nearby',
+      'radarPermissionNeeded': 'Enable Bluetooth & Location for radar',
+      'rescan': 'Rescan',
     },
     'hi': {
       'home': 'होम',
@@ -203,6 +215,11 @@ class AppLocalizations {
       'hintDialpad': 'यदि ऑफ़लाइन हैं तो USSD/SMS फ़ॉलबैक के माध्यम से पैसे भेजने के लिए मैन्युअल रूप से मोबाइल नंबर दर्ज करें।',
       'clear': 'साफ़ करें',
       'enterNumber': 'नंबर दर्ज करें',
+      'scanningNearby': 'आस-पास के उपयोगकर्ताओं को खोज रहे हैं...',
+      'usersNearby': 'उपयोगकर्ता पास में हैं — भेजने के लिए टैप करें!',
+      'noUsersNearby': 'पास में कोई BluePay उपयोगकर्ता नहीं',
+      'radarPermissionNeeded': 'रडार के लिए Bluetooth और Location चालू करें',
+      'rescan': 'फिर से स्कैन करें',
     },
     'kn': {
       'home': 'ಮುಖಪುಟ',
@@ -264,6 +281,11 @@ class AppLocalizations {
       'hintDialpad': 'ಆಫ್‌ಲೈನ್ ಆಗಿದ್ದರೆ USSD/SMS ಫಾಲ್‌ಬ್ಯಾಕ್ ಮೂಲಕ ಹಣವನ್ನು ಕಳುಹಿಸಲು ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಹಸ್ತಚಾಲಿತವಾಗಿ ನಮೂದಿಸಿ.',
       'clear': 'ಅಳಿಸಿ',
       'enterNumber': 'ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+      'scanningNearby': 'ಹತ್ತಿರದ ಬಳಕೆದಾರರನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ...',
+      'usersNearby': 'ಬಳಕೆದಾರರು ಹತ್ತಿರದಲ್ಲಿದ್ದಾರೆ — ಕಳುಹಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ!',
+      'noUsersNearby': 'ಹತ್ತಿರದಲ್ಲಿ BluePay ಬಳಕೆದಾರರಿಲ್ಲ',
+      'radarPermissionNeeded': 'ರಾಡಾರ್ಗಾಗಿ Bluetooth ಮತ್ತು Location ಆನ್ ಮಾಡಿ',
+      'rescan': 'ಮರು-ಸ್ಕ್ಯಾನ್',
     },
   };
 }
