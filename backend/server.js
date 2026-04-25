@@ -319,8 +319,9 @@ app.post('/sms', (req, res) => {
 // Expected body (same shape as /transaction):
 //   {
 //     "txn_id":    "TXN17430...",
-//     "senderId":  "Alexey G.",
-//     "receiverId": "9876543210",
+//     "senderId":  "9876543210",   ← always sender's phone number
+//     "senderName": "Alexey G.",  ← optional display name
+//     "receiverId": "6360139965",  ← always receiver's phone number
 //     "amount":    500
 //   }
 //

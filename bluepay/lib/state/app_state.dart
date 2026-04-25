@@ -130,13 +130,13 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Money operations ──────────────────────────────────────────────────────
-  void receiveMoney(double amount, String senderName) {
+  void receiveMoney(double amount, String counterpartId) {
     balance += amount;
     transactions.insert(
       0,
       Transaction(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        counterpartName: senderName,
+        counterpartName: counterpartId,
         amount: amount,
         isPositive: true,
         date: DateTime.now(),
@@ -146,14 +146,14 @@ class AppState extends ChangeNotifier {
     _persistBalanceAndTransactions();
   }
 
-  void sendMoney(double amount, String receiverName) {
+  void sendMoney(double amount, String counterpartId) {
     if (balance >= amount) {
       balance -= amount;
       transactions.insert(
         0,
         Transaction(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          counterpartName: receiverName,
+          counterpartName: counterpartId,
           amount: amount,
           isPositive: false,
           date: DateTime.now(),
