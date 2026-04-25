@@ -169,12 +169,16 @@ class AppState extends ChangeNotifier {
   }
 
   // ── Money operations ──────────────────────────────────────────────────────
-  void receiveMoney(double amount, String counterpartId) {
+  void receiveMoney(double amount, String counterpartId, {String? txnId}) {
+    if (txnId != null && transactions.any((t) => t.id == txnId)) {
+      debugPrint('[AppState] Duplicate receive ignored: $txnId');
+      return;
+    }
     balance += amount;
     transactions.insert(
       0,
       Transaction(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: txnId ?? DateTime.now().millisecondsSinceEpoch.toString(),
         counterpartName: counterpartId,
         amount: amount,
         isPositive: true,
@@ -185,13 +189,17 @@ class AppState extends ChangeNotifier {
     _persistBalanceAndTransactions();
   }
 
-  void sendMoney(double amount, String counterpartId) {
+  void sendMoney(double amount, String counterpartId, {String? txnId}) {
+    if (txnId != null && transactions.any((t) => t.id == txnId)) {
+      debugPrint('[AppState] Duplicate send ignored: $txnId');
+      return;
+    }
     if (balance >= amount) {
       balance -= amount;
       transactions.insert(
         0,
         Transaction(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: txnId ?? DateTime.now().millisecondsSinceEpoch.toString(),
           counterpartName: counterpartId,
           amount: amount,
           isPositive: false,

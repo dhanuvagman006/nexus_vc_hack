@@ -41,8 +41,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
     setState(() => _isSending = true);
 
     try {
-      // Build Payload
+      // Generate ID early so both parties use the exact same one
+      final String txnId = 'TXN${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';
+
+      // Build Payload with txn_id
       final Map<String, dynamic> data = {
+        'txn_id': txnId,
         'amount': amount,
         'senderPhone': appState.userPhone,   // used as senderId on receive side
         'senderName': appState.currentUserName,
@@ -55,10 +59,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
 
       // Local State Deduction
-      appState.sendMoney(amount, widget.receiverPhone);
+      appState.sendMoney(amount, widget.receiverPhone, txnId: txnId);
 
       // Enqueue SMS — sent immediately if online, persisted if offline
-      final String txnId = 'TXN${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0')}';
       final String smsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","senderName":"${appState.currentUserName.trim()}","receiverId":"${widget.receiverPhone.trim()}","amount":$amount}';
       await SmsQueueService.instance.enqueue(body: smsBody);
 

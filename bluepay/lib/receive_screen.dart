@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'state/app_state.dart';
+import 'services/sms_queue_service.dart';
 import 'success_animation.dart';
 import 'l10n/app_localizations.dart';
 
@@ -89,18 +90,35 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     }
   }
 
-  void _handleIncomingPayment(String jsonString) {
+  void _handleIncomingPayment(String jsonString) async {
     if (!mounted) return;
     try {
       final decoded = json.decode(jsonString);
       final double? amount = double.tryParse(decoded['amount']?.toString() ?? '');
-      final String senderPhone = decoded['senderPhone'] ?? decoded['senderName'] ?? 'Unknown';
+      final String senderId = decoded['senderPhone'] ?? 'Unknown';
+      final String senderName = decoded['senderName'] ?? senderId;
+      final String? txnId = decoded['txn_id'];
 
       if (amount != null && amount > 0) {
-        // Update global state
-        Provider.of<AppState>(context, listen: false).receiveMoney(amount, senderPhone);
+        final appState = Provider.of<AppState>(context, listen: false);
 
-        // Show Success dialog and return
+        // 1. Local Idempotency check 
+        if (txnId != null && appState.transactions.any((t) => t.id == txnId)) {
+          debugPrint('[Receive] Already processed txn $txnId. Skipping.');
+          return;
+        }
+
+        // 2. Update global state
+        appState.receiveMoney(amount, senderName, txnId: txnId);
+
+        // 3. Redundant SMS Queue — if receiver gets signal first, bank is notified
+        if (txnId != null) {
+          final String myPhone = appState.userPhone.trim();
+          final String smsBody = '{"txn_id":"$txnId","senderId":"${senderId.trim()}","senderName":"${senderName.trim()}","receiverId":"$myPhone","amount":$amount}';
+          await SmsQueueService.instance.enqueue(body: smsBody);
+        }
+
+        // 4. Show Success dialog
         showSuccessAnimation(context, () {
           Navigator.pop(context); // Dismiss animation overlay
           Navigator.pop(context); // Go back home
