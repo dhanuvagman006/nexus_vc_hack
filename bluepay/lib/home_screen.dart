@@ -515,8 +515,6 @@ class _DialpadScreenState extends State<DialpadScreen> {
       return;
     }
 
-    // Build JSON SMS body — Android relay app on 6360139965 receives this
-    // and POSTs the same JSON to POST /relay on the backend.
     final txnId =
         'TXN${DateTime.now().millisecondsSinceEpoch}${(DateTime.now().microsecond % 9999).toString().padLeft(4, '0')}';
     final smsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","receiverId":"$receiverPhone","amount":$amount}';
