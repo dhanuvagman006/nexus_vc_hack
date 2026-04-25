@@ -96,7 +96,8 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
       final decoded = json.decode(jsonString);
       final double? amount = double.tryParse(decoded['amount']?.toString() ?? '');
       final String senderId = decoded['senderPhone'] ?? 'Unknown';
-      final String senderName = decoded['senderName'] ?? senderId;
+      String senderName = decoded['senderName'] ?? '';
+      if (senderName.trim().isEmpty) senderName = senderId;
       final String? txnId = decoded['txn_id'];
 
       if (amount != null && amount > 0) {

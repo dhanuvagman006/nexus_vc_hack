@@ -59,7 +59,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
 
       // Local State Deduction
-      appState.sendMoney(amount, widget.receiverPhone, txnId: txnId);
+      final nameToRecord = widget.receiverName.isNotEmpty ? widget.receiverName : widget.receiverPhone;
+      appState.sendMoney(amount, nameToRecord, txnId: txnId);
 
       // Enqueue SMS — sent immediately if online, persisted if offline
       final String smsBody = json.encode({
