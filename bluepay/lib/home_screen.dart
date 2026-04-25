@@ -618,7 +618,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
           child: Text(
             label,
             style: const TextStyle(
-              fontSize: 34,
+              fontSize: 30,
               fontWeight: FontWeight.w700,
               color: Colors.black,
             ),
@@ -677,79 +677,89 @@ class _DialpadScreenState extends State<DialpadScreen> {
                         ),
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
             const SizedBox(height: 16),
             // ── Dialpad Container ─────────────────────────────────────
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.black, width: 1.5),
-                ),
-                child: Column(
-                  children: [
-                    // ── Display Row ───────────────────────────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: SizedBox(
+                height: MediaQuery.sizeOf(context).height * 0.64,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.black, width: 1.4),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x14000000),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(width: 24), // Balance spacing
-                          Expanded(
-                            child: Text(
-                              _input.isEmpty ? context.l10n.enterNumber : _input,
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: _input.isEmpty
-                                    ? Colors.grey[400]
-                                    : Colors.black,
-                                letterSpacing: 2,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (_input.isNotEmpty)
-                            GestureDetector(
-                              onTap: _onBackspace,
-                              onLongPress: _onClear,
-                              child: const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Icon(
-                                  Icons.backspace_outlined,
-                                  color: Colors.black,
-                                  size: 24,
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // ── Display Row ───────────────────────────────────────────────
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(width: 24), // Balance spacing
+                            Expanded(
+                              child: Text(
+                                _input.isEmpty ? context.l10n.enterNumber : _input,
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: _input.isEmpty
+                                      ? Colors.grey[400]
+                                      : Colors.black,
+                                  letterSpacing: 1.8,
                                 ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            )
-                          else
-                            const SizedBox(width: 32), // Spacer when no input
-                        ],
+                            ),
+                            if (_input.isNotEmpty)
+                              GestureDetector(
+                                onTap: _onBackspace,
+                                onLongPress: _onClear,
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 8),
+                                  child: Icon(
+                                    Icons.backspace_outlined,
+                                    color: Colors.black,
+                                    size: 22,
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(width: 32), // Spacer when no input
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(height: 1.5, color: Colors.black),
-                    // ── Keys grid ─────────────────────────────────────────────
-                    Expanded(
-                      child: Column(
-                        children: [
-                          _buildGridRow(['1', '2', '3']),
-                          _buildGridRow(['4', '5', '6']),
-                          _buildGridRow(['7', '8', '9']),
-                          _buildGridRow(['*', '0', '#']),
-                        ],
+                      Container(height: 1.2, color: Colors.black),
+                      // ── Keys grid ─────────────────────────────────────────────
+                      Expanded(
+                        child: Column(
+                          children: [
+                            _buildGridRow(['1', '2', '3']),
+                            _buildGridRow(['4', '5', '6']),
+                            _buildGridRow(['7', '8', '9']),
+                            _buildGridRow(['*', '0', '#']),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -855,24 +865,7 @@ class WalletScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            context.l10n.transactionHistory,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text('See All', style: TextStyle(color: Colors.blueAccent)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           _StatCard(
