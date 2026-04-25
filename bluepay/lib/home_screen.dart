@@ -882,29 +882,7 @@ class WalletScreen extends StatelessWidget {
                           _InfoRow(icon: Icons.tag_outlined, label: context.l10n.endpointId, value: appState.myEndpointId),
                         ],
                       ),
-                      const SizedBox(height: 28),
-                      Text(
-                        context.l10n.quickActions,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          _QuickAction(
-                            icon: Icons.qr_code_scanner,
-                            label: context.l10n.scanQrCode,
-                            iconBgColor: const Color(0xFFE3F2FD),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QRScannerScreen())),
-                          ),
-                          const SizedBox(width: 12),
-                          _QuickAction(
-                            icon: Icons.qr_code,
-                            label: context.l10n.receiveMoney,
-                            iconBgColor: const Color(0xFFE8F5E9),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReceiveScreen())),
-                          ),
-                        ],
-                      ),
+
                     ],
                   ),
                 ),
@@ -1043,59 +1021,6 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color iconBgColor;
-  final VoidCallback onTap;
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.iconBgColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.black, width: 1.5),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 1.5),
-                ),
-                child: Icon(icon, color: Colors.black, size: 22),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 // ─── History Screen ───────────────────────────────────────────────────────────
 class HistoryScreen extends StatefulWidget {

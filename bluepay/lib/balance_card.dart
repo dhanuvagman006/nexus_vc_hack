@@ -140,7 +140,7 @@ class _BalanceCardState extends State<BalanceCard> {
                         width: 24,
                         height: 24,
                         decoration: const BoxDecoration(
-                          color: Colors.redAccent,
+                          color: Colors.lightBlue,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -151,7 +151,7 @@ class _BalanceCardState extends State<BalanceCard> {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.9),
+                          color: Color(0xFF1565C0), // Colors.blue.shade800
                           shape: BoxShape.circle,
                         ),
                       ),
