@@ -43,6 +43,8 @@ dependencies:
   background_sms: ^0.0.4
   shared_preferences: ^2.5.5
   connectivity_plus: ^6.1.4
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'state/app_state.dart';
 import 'success_animation.dart';
+import 'l10n/app_localizations.dart';
 
 class ReceiveScreen extends StatefulWidget {
   const ReceiveScreen({super.key});
@@ -122,14 +123,14 @@ class _ReceiveScreenState extends State<ReceiveScreen> {
     final myPhone = appState.userPhone.isNotEmpty ? appState.userPhone : appState.currentUserName;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Receive Money Offline')),
+      appBar: AppBar(title: Text(context.l10n.receiveMoney)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Show this QR to the sender',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              context.l10n.showThisQr,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(

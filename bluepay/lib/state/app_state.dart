@@ -20,21 +20,21 @@ class Transaction {
 
   /// Serialize to a JSON-compatible map
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'counterpartName': counterpartName,
-        'amount': amount,
-        'isPositive': isPositive,
-        'date': date.toIso8601String(),
-      };
+    'id': id,
+    'counterpartName': counterpartName,
+    'amount': amount,
+    'isPositive': isPositive,
+    'date': date.toIso8601String(),
+  };
 
   /// Reconstruct from a JSON map
   factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
-        id: json['id'] as String,
-        counterpartName: json['counterpartName'] as String,
-        amount: (json['amount'] as num).toDouble(),
-        isPositive: json['isPositive'] as bool,
-        date: DateTime.parse(json['date'] as String),
-      );
+    id: json['id'] as String,
+    counterpartName: json['counterpartName'] as String,
+    amount: (json['amount'] as num).toDouble(),
+    isPositive: json['isPositive'] as bool,
+    date: DateTime.parse(json['date'] as String),
+  );
 }
 
 class AppState extends ChangeNotifier {
@@ -45,6 +45,7 @@ class AppState extends ChangeNotifier {
   String userAddress = '';
   String userPin = '';
   String myEndpointId = '';
+  String locale = 'en'; // default to English
 
   double balance = 1000.00;
   List<Transaction> transactions = [];
@@ -58,6 +59,7 @@ class AppState extends ChangeNotifier {
   static const _kEndpointId = 'myEndpointId';
   static const _kBalance = 'balance';
   static const _kTransactions = 'transactions';
+  static const _kLocale = 'app_locale';
 
   AppState() {
     _loadAll();
@@ -71,6 +73,7 @@ class AppState extends ChangeNotifier {
     userEmail = prefs.getString(_kEmail) ?? '';
     userPhone = prefs.getString(_kPhone) ?? '';
     userAddress = prefs.getString(_kAddress) ?? '';
+    locale = prefs.getString(_kLocale) ?? 'en';
     userPin = prefs.getString(_kPin) ?? '';
 
     // Endpoint ID: generate once and persist so it stays stable across restarts
@@ -88,8 +91,9 @@ class AppState extends ChangeNotifier {
     if (raw != null) {
       try {
         final List<dynamic> decoded = jsonDecode(raw);
-        transactions =
-            decoded.map((e) => Transaction.fromJson(e as Map<String, dynamic>)).toList();
+        transactions = decoded
+            .map((e) => Transaction.fromJson(e as Map<String, dynamic>))
+            .toList();
       } catch (_) {
         transactions = [];
       }
@@ -125,7 +129,9 @@ class AppState extends ChangeNotifier {
     await prefs.setString(_kPhone, userPhone);
     await prefs.setString(_kPin, userPin);
 
-    debugPrint('[AppState] Registration complete. PIN saved: ${prefs.getString(_kPin)}');
+    debugPrint(
+      '[AppState] Registration complete. PIN saved: ${prefs.getString(_kPin)}',
+    );
     notifyListeners();
   }
 
@@ -150,6 +156,15 @@ class AppState extends ChangeNotifier {
     userAddress = address;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kAddress, userAddress);
+    notifyListeners();
+  }
+
+  // ── Language ──────────────────────────────────────────────────────────────
+  Future<void> setLocale(String newLocale) async {
+    if (locale == newLocale) return;
+    locale = newLocale;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLocale, locale);
     notifyListeners();
   }
 

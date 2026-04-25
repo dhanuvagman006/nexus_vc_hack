@@ -6,317 +6,219 @@
   <title>BluePay — Dashboard</title>
   <meta name="description" content="BluePay admin dashboard — view users, balances, and transaction history in real time." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #0b0f1a;
-      --surface:   #111827;
-      --surface2:  #1a2235;
-      --border:    #1f2d45;
-      --accent:    #3b82f6;
-      --accent2:   #60a5fa;
-      --green:     #22c55e;
-      --red:       #ef4444;
-      --yellow:    #f59e0b;
-      --text:      #f1f5f9;
-      --muted:     #64748b;
-      --radius:    14px;
+      --bg: #030303; 
+      --surface: #0A0A0A; 
+      --row-hover: #171717;
+      --border: rgba(255, 255, 255, 0.2); 
+      
+      --text-primary: #FAFAFA;
+      --text-secondary: #A3A3A3;
+      --text-headers: #D4D4D4;
+      --text-mono: #f5f5f5;
+      
+      --status-approved: #10B981;
+      --status-rejected: #EF4444;
+      --status-pending: #F59E0B;
+      
+      --radius: 6px;
     }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.6;
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-primary);
       min-height: 100vh;
       padding: 0 0 60px;
     }
 
     /* ── Header ── */
     header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 20px 36px;
+      height: 54px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
-      backdrop-filter: blur(12px);
     }
     .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
     }
-    .logo-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem;
-    }
-    .status-dot {
+    .status-dot-container {
       display: flex; align-items: center; gap: 8px;
-      font-size: 0.8rem; color: var(--muted);
+      font-size: 13px; font-weight: 500; color: var(--text-secondary);
     }
     .dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-      animation: pulse 2s infinite;
+      background: var(--status-pending);
     }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
     /* ── Layout ── */
-    main { max-width: 1200px; margin: 0 auto; padding: 36px 24px 0; }
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 0; }
 
-    h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 18px; color: var(--text); }
+    h2 { 
+      font-size: 12px; font-weight: 600; 
+      text-transform: uppercase; letter-spacing: 0.04em; 
+      color: var(--text-headers); margin-bottom: 20px; 
+    }
 
     /* ── User Cards ── */
     .users-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 18px;
-      margin-bottom: 40px;
+      gap: 0;
+      margin-bottom: 48px;
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      background: var(--surface);
     }
     .user-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       padding: 24px;
       cursor: pointer;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
-      position: relative;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.15s;
     }
-    .user-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(59,130,246,.06), transparent);
-      opacity: 0;
-      transition: opacity .2s;
+    .user-card:hover { 
+      background: var(--row-hover);
     }
-    .user-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(59,130,246,.15); }
-    .user-card:hover::before { opacity: 1; }
-    .user-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,.3); }
+    .user-card.active { background: rgba(255, 255, 255, 0.1); }
 
-    .card-avatar {
-      width: 46px; height: 46px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; font-weight: 700;
-      margin-bottom: 14px;
-    }
-    .card-name { font-size: 1rem; font-weight: 600; }
-    .card-id { font-size: 0.75rem; color: var(--muted); margin-bottom: 16px; }
-    .card-balance-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-    .card-balance {
-      font-size: 1.8rem; font-weight: 800;
-      background: linear-gradient(90deg, var(--accent2), #a78bfa);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
+    .card-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .card-id { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; font-family: 'Inter', monospace; }
+    .card-balance-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-headers); margin-bottom: 6px; font-weight: 500; }
+    .card-balance { font-size: 20px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
 
     /* ── Section row ── */
-    .section-row {
-      display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 24px;
-      align-items: start;
-    }
-    @media(max-width:860px){ .section-row{ grid-template-columns:1fr; } }
+    .section-row { display: block; }
 
-    /* ── Transactions panel ── */
+    /* ── Panels ── */
     .panel {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+      margin-bottom: 24px;
     }
+    
     .panel-header {
-      padding: 18px 22px;
-      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 56px;
+      border-top: 1px solid var(--border);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      background: #111111;
     }
-    .panel-header h2 { margin: 0; }
+    .panel-header h2 { margin: 0; color: var(--text-primary); font-size: 13px; font-weight: 600; }
+    
     .badge {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 0.72rem;
-      padding: 3px 10px;
-      color: var(--muted);
-    }
-
-    .txn-list { max-height: 440px; overflow-y: auto; }
-    .txn-list::-webkit-scrollbar { width: 4px; }
-    .txn-list::-webkit-scrollbar-track { background: transparent; }
-    .txn-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-    .txn-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 22px;
-      border-bottom: 1px solid var(--border);
-      transition: background .15s;
-      animation: fadeIn .3s ease;
-    }
-    @keyframes fadeIn { from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
-    .txn-item:last-child { border-bottom: none; }
-    .txn-item:hover { background: var(--surface2); }
-
-    .txn-icon {
-      width: 38px; height: 38px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; flex-shrink: 0;
-    }
-    .txn-icon.sent     { background: rgba(239,68,68,.12);  color: var(--red);   }
-    .txn-icon.received { background: rgba(34,197,94,.12);  color: var(--green); }
-
-    .txn-info { flex: 1; min-width: 0; }
-    .txn-peer { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .txn-id   { font-size: 0.68rem; color: var(--muted); font-family: monospace; }
-    .txn-time { font-size: 0.68rem; color: var(--muted); }
-
-    .txn-amount { font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
-    .txn-amount.sent     { color: var(--red);   }
-    .txn-amount.received { color: var(--green); }
-
-    .empty-state {
-      padding: 48px 24px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.85rem; }
-
-    /* ── Send Money Form ── */
-    .form-panel {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+      padding: 0 10px;
+      height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
     }
-    .form-panel h2 { margin-bottom: 20px; }
-
-    .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .8px; }
-
-    select, input[type="text"], input[type="number"] {
-      width: 100%;
-      background: var(--surface2);
+    .refresh-btn {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      padding: 10px 14px;
-      outline: none;
-      transition: border-color .2s;
-    }
-    select:focus, input:focus { border-color: var(--accent); }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
+      color: var(--text-secondary);
+      border-radius: var(--radius);
+      padding: 0 14px;
+      height: 28px;
+      font-size: 12px; font-weight: 500;
       cursor: pointer;
-      transition: opacity .2s, transform .1s;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.1s;
     }
-    .btn:active { transform: scale(.98); }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #8b5cf6);
-      color: #fff;
-      margin-top: 8px;
+    .refresh-btn:hover:not(:disabled) { background: var(--row-hover); color: var(--text-primary); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Table ── */
+    .table-container {
+      max-height: 480px; 
+      overflow-y: auto; 
     }
-    .btn-primary:hover { opacity: .9; }
-    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .table-container::-webkit-scrollbar { width: 8px; }
+    .table-container::-webkit-scrollbar-track { background: transparent; }
+    .table-container::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .table-container::-webkit-scrollbar-thumb:hover { background: #444; }
+
+    table { 
+      width: 100%; border-collapse: collapse; text-align: left; 
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    thead { position: sticky; top: 0; z-index: 10; }
+    th {
+      font-size: 11px; text-transform: uppercase; color: var(--text-headers);
+      font-weight: 500; letter-spacing: 0.04em; padding: 0 24px; height: 44px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      background: #111111; white-space: nowrap;
+    }
+    th:last-child { border-right: none; }
+    td {
+      font-size: 13px; color: var(--text-primary); padding: 0 24px; height: 52px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    td:last-child { border-right: none; }
+    tbody tr:hover td { background: var(--row-hover); }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 400;
+      color: var(--text-primary);
+    }
+    .status-badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; }
+    .status-badge.sent::before { background: var(--status-rejected); }
+    .status-badge.received::before { background: var(--status-approved); }
+
+    .empty-state {
+      padding: 64px 24px; text-align: center; color: var(--text-secondary);
+    }
+    .empty-state p { font-size: 13px; font-weight: 400; }
 
     /* ── Toast ── */
     #toast {
-      position: fixed; bottom: 24px; right: 24px;
-      padding: 14px 20px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      max-width: 320px;
-      z-index: 999;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity .3s, transform .3s;
+      position: fixed; bottom: 32px; right: 32px;
+      padding: 14px 20px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text-primary); font-size: 13px; font-weight: 500;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+      z-index: 999; opacity: 0; transform: translateY(16px);
+      transition: opacity .3s ease, transform .3s ease; 
       pointer-events: none;
     }
     #toast.show { opacity: 1; transform: none; }
-    #toast.success { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
-    #toast.error   { background: rgba(239,68,68,.15);  border: 1px solid var(--red);   color: var(--red);   }
-
-    /* ── Refresh btn ── */
-    .refresh-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      border-radius: 8px;
-      padding: 6px 14px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: border-color .2s, color .2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--accent2); }
-
-    /* ── SMS Panel ── */
-    .sms-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-top: 24px;
-    }
-    .sms-panel h2 { margin-bottom: 6px; }
-    .sms-hint { font-size: 0.75rem; color: var(--muted); margin-bottom: 16px; }
-    .sms-hint code {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 0.75rem;
-      color: var(--accent2);
-    }
-    .sms-input-row { display: flex; gap: 10px; }
-    .sms-input-row input { flex: 1; }
-    .btn-sms {
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity .2s;
-    }
-    .btn-sms:hover { opacity: .88; }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">💳</div>
     BluePay
   </div>
-  <div class="status-dot">
+  <div class="status-dot-container">
     <div class="dot" id="statusDot"></div>
     <span id="statusText">Connecting…</span>
   </div>
@@ -325,63 +227,45 @@
 <main>
 
   <!-- Users -->
-  <h2>👥 Users &amp; Balances</h2>
+  <h2>Users &amp; Balances</h2>
   <div class="users-grid" id="usersGrid">
-    <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading users…</p></div>
+    <div class="empty-state"><p>Loading users…</p></div>
   </div>
 
-  <!-- Transactions + Send Money -->
+  <!-- Transactions -->
   <div class="section-row">
-
-    <!-- Transactions -->
-    <div class="panel">
+    <div class="panel" style="padding:0; box-shadow:none; border:none; background:transparent;">
       <div class="panel-header">
-        <h2 id="txnTitle">📋 All Transactions</h2>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <h2 id="txnTitle" style="margin:0; font-size:13px; letter-spacing:0; text-transform:none;">All Transactions</h2>
+        <div style="display:flex;gap:12px;align-items:center;">
           <span class="badge" id="txnCount">0 txns</span>
-          <button class="refresh-btn" onclick="refreshTxns()">↻ Refresh</button>
+          <button class="refresh-btn" onclick="refreshTxns()">Refresh</button>
         </div>
       </div>
-      <div class="txn-list" id="txnList">
-        <div class="empty-state"><div class="empty-icon">🔍</div><p>Select a user or send a transaction</p></div>
-      </div>
-    </div>
-
-    <!-- Right column: Send + SMS -->
-    <div>
-      <!-- Send Money -->
-      <div class="form-panel">
-        <h2>💸 Send Money</h2>
-        <div class="form-group">
-          <label for="senderSel">From</label>
-          <select id="senderSel"></select>
-        </div>
-        <div class="form-group">
-          <label for="receiverSel">To</label>
-          <select id="receiverSel"></select>
-        </div>
-        <div class="form-group">
-          <label for="amountInp">Amount (₹)</label>
-          <input type="number" id="amountInp" placeholder="e.g. 250" min="1" />
-        </div>
-        <button class="btn btn-primary" id="sendBtn" onclick="sendMoney()">Send Payment</button>
-      </div>
-
-      <!-- SMS Simulator -->
-      <div class="sms-panel">
-        <h2>📱 SMS Simulator</h2>
-        <p class="sms-hint">Format: <code>PAY &lt;amount&gt; &lt;senderId&gt; &lt;receiverId&gt; &lt;txn_id&gt;</code></p>
-        <div class="sms-input-row">
-          <input type="text" id="smsInp" placeholder="PAY 100 user1 user2 TXN001" />
-          <button class="btn-sms" onclick="sendSms()">Send SMS</button>
-        </div>
+      <div class="table-container">
+        <table id="txnTable">
+          <thead>
+            <tr>
+              <th>TRANSACTION</th>
+              <th>DATE</th>
+              <th>STATUS</th>
+              <th style="text-align: right;">AMOUNT</th>
+            </tr>
+          </thead>
+          <tbody id="txnList">
+            <tr>
+              <td colspan="4">
+                <div class="empty-state"><p>Select a user or refresh transactions</p></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
 </main>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
@@ -389,7 +273,6 @@
   let allUsers = {};
   let selectedUserId = null;
 
-  // ── Toast ──────────────────────────────────────────────────────────────
   function toast(msg, type = 'success') {
     const el = document.getElementById('toast');
     el.textContent = msg;
@@ -398,20 +281,17 @@
     el._t = setTimeout(() => { el.className = ''; }, 3500);
   }
 
-  // ── Fetch helpers ───────────────────────────────────────────────────────
   async function apiFetch(path, opts = {}) {
     const r = await fetch(API + path, { headers: { 'Content-Type': 'application/json' }, ...opts });
     return r.json();
   }
 
-  // ── Load Users ──────────────────────────────────────────────────────────
   async function loadUsers() {
     try {
       const data = await apiFetch('/users');
       allUsers = {};
       data.users.forEach(u => allUsers[u.userId] = u);
       renderUsers();
-      populateSelects();
       setStatus(true);
     } catch {
       setStatus(false);
@@ -422,14 +302,13 @@
     const grid = document.getElementById('usersGrid');
     grid.innerHTML = '';
     Object.values(allUsers).forEach(u => {
-      const initials = u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
       const card = document.createElement('div');
       card.className = 'user-card' + (selectedUserId === u.userId ? ' active' : '');
       card.id = 'card-' + u.userId;
       card.innerHTML = `
-        <div class="card-avatar">${initials}</div>
         <div class="card-name">${u.name}</div>
         <div class="card-id">${u.userId}</div>
+        <div style="flex:1;"></div>
         <div class="card-balance-label">Balance</div>
         <div class="card-balance">₹${u.balance.toFixed(2)}</div>
       `;
@@ -438,16 +317,6 @@
     });
   }
 
-  function populateSelects() {
-    const users = Object.values(allUsers);
-    ['senderSel','receiverSel'].forEach((id, i) => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = users.map(u => `<option value="${u.userId}">${u.name} (₹${u.balance.toFixed(2)})</option>`).join('');
-      if (i === 1 && users.length > 1) sel.selectedIndex = 1;
-    });
-  }
-
-  // ── Select user for txn history ─────────────────────────────────────────
   async function selectUser(userId) {
     selectedUserId = userId;
     document.querySelectorAll('.user-card').forEach(c => c.classList.remove('active'));
@@ -455,10 +324,10 @@
     if (card) card.classList.add('active');
 
     const name = allUsers[userId]?.name || userId;
-    document.getElementById('txnTitle').textContent = `📋 ${name}'s Transactions`;
+    document.getElementById('txnTitle').textContent = `${name}'s Transactions`;
 
     const list = document.getElementById('txnList');
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Loading…</p></div>';
+    list.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>Loading…</p></div></td></tr>';
 
     try {
       const data = await apiFetch(`/transactions/${userId}`);
@@ -470,13 +339,25 @@
   }
 
   async function refreshTxns() {
-    await loadUsers();
-    if (selectedUserId) await selectUser(selectedUserId);
-    else await loadAllTxns();
+    const btn = document.querySelector('.refresh-btn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Refreshing...';
+    btn.disabled = true;
+
+    try {
+      await loadUsers();
+      if (selectedUserId) await selectUser(selectedUserId);
+      else await loadAllTxns();
+      toast('Transactions refreshed', 'success');
+    } catch (e) {
+      toast('Failed to refresh data', 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
   }
 
   async function loadAllTxns() {
-    // Aggregate all transactions by fetching each user
     const userIds = Object.keys(allUsers);
     const seen = new Set();
     const combined = [];
@@ -489,7 +370,7 @@
       } catch {}
     }
     combined.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-    document.getElementById('txnTitle').textContent = '📋 All Transactions';
+    document.getElementById('txnTitle').textContent = 'All Transactions';
     document.getElementById('txnCount').textContent = `${combined.length} txns`;
     renderTxns(combined, null);
   }
@@ -497,14 +378,14 @@
   function renderTxns(txns, forUserId) {
     const list = document.getElementById('txnList');
     if (!txns || txns.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No transactions yet</p></div>';
+      list.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>No transactions yet</p></div></td></tr>';
       return;
     }
     const sorted = [...txns].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     list.innerHTML = sorted.map(t => {
       const isSent = forUserId ? t.senderId === forUserId : false;
-      const cls  = forUserId ? (isSent ? 'sent' : 'received') : 'received';
-      const icon = isSent ? '↑' : '↓';
+      const statusCls = isSent ? 'sent' : 'received';
+      const statusText = isSent ? 'Rejected' : 'Approved'; 
       const sign = isSent ? '-' : '+';
       const peer = isSent ? t.receiverName : t.senderName;
       const label = forUserId
@@ -512,93 +393,30 @@
         : `${t.senderName} → ${t.receiverName}`;
       const time = new Date(t.timestamp).toLocaleString();
       return `
-        <div class="txn-item">
-          <div class="txn-icon ${cls}">${icon}</div>
-          <div class="txn-info">
-            <div class="txn-peer">${label}</div>
-            <div class="txn-id">${t.txn_id}</div>
-            <div class="txn-time">${time}</div>
-          </div>
-          <div class="txn-amount ${cls}">${sign}₹${t.amount.toFixed(2)}</div>
-        </div>`;
+        <tr>
+          <td>
+            <div style="font-weight:500; color:var(--text-primary); margin-bottom:4px;">${label}</div>
+            <div style="font-size:11px; color:var(--text-secondary); font-family:monospace;">${t.txn_id}</div>
+          </td>
+          <td style="color:var(--text-secondary);">${time}</td>
+          <td>
+            <div class="status-badge ${statusCls}">${statusText}</div>
+          </td>
+          <td style="color:var(--text-mono); font-weight:600; text-align:right;">${sign}₹${t.amount.toFixed(2)}</td>
+        </tr>`;
     }).join('');
   }
 
-  // ── Send Money ──────────────────────────────────────────────────────────
-  async function sendMoney() {
-    const senderId   = document.getElementById('senderSel').value;
-    const receiverId = document.getElementById('receiverSel').value;
-    const amount     = parseFloat(document.getElementById('amountInp').value);
-
-    if (senderId === receiverId) { toast('Sender and receiver must differ', 'error'); return; }
-    if (!amount || amount <= 0)  { toast('Enter a valid amount', 'error'); return; }
-
-    const btn = document.getElementById('sendBtn');
-    btn.disabled = true;
-    btn.textContent = 'Processing…';
-
-    const txn_id = 'TXN-' + Date.now();
-    try {
-      const res = await apiFetch('/transaction', {
-        method: 'POST',
-        body: JSON.stringify({ txn_id, senderId, receiverId, amount }),
-      });
-      if (res.status === 'success') {
-        toast(`✅ ₹${amount.toFixed(2)} sent successfully!`);
-        document.getElementById('amountInp').value = '';
-        await loadUsers();
-        if (selectedUserId) await selectUser(selectedUserId);
-        else await loadAllTxns();
-      } else {
-        toast(res.message || 'Transaction failed', 'error');
-      }
-    } catch {
-      toast('Network error', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Send Payment';
-    }
-  }
-
-  // ── SMS Simulator ───────────────────────────────────────────────────────
-  async function sendSms() {
-    const message = document.getElementById('smsInp').value.trim();
-    if (!message) { toast('Enter an SMS message', 'error'); return; }
-    try {
-      const res = await apiFetch('/sms', { method: 'POST', body: JSON.stringify({ message }) });
-      if (res.status === 'success') {
-        toast(`📱 SMS processed — ₹${res.amount} sent`);
-        document.getElementById('smsInp').value = '';
-        await loadUsers();
-        if (selectedUserId) await selectUser(selectedUserId);
-        else await loadAllTxns();
-      } else {
-        toast(res.message || 'SMS failed', 'error');
-      }
-    } catch {
-      toast('Network error', 'error');
-    }
-  }
-
-  // ── Status indicator ────────────────────────────────────────────────────
   function setStatus(online) {
     const dot  = document.getElementById('statusDot');
     const text = document.getElementById('statusText');
-    dot.style.background    = online ? 'var(--green)' : 'var(--red)';
-    dot.style.boxShadow     = online ? '0 0 6px var(--green)' : '0 0 6px var(--red)';
+    dot.style.background    = online ? 'var(--status-approved)' : 'var(--status-rejected)';
     text.textContent        = online ? 'Backend online' : 'Backend offline';
   }
 
-  // ── Boot ────────────────────────────────────────────────────────────────
   (async () => {
     await loadUsers();
     await loadAllTxns();
-    // Auto-refresh every 10s
-    setInterval(async () => {
-      await loadUsers();
-      if (selectedUserId) await selectUser(selectedUserId);
-      else await loadAllTxns();
-    }, 10000);
   })();
 </script>
 </body>

@@ -5,6 +5,7 @@ import 'state/app_state.dart';
 import 'edit_profile_screen.dart';
 import 'address_management_screen.dart';
 import 'help_support_screen.dart';
+import 'l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -35,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 24),
                       _buildOptionItem(
                         icon: Icons.person_outline,
-                        title: 'Edit Profile',
+                        title: context.l10n.editProfile,
                         onTap: () {
                           Navigator.push(
                             context,

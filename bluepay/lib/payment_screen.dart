@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'state/app_state.dart';
 import 'services/sms_queue_service.dart';
 import 'success_animation.dart';
+import 'l10n/app_localizations.dart';
 
 class PaymentScreen extends StatefulWidget {
   final String endpointId;
@@ -95,7 +96,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-              'Paying ${widget.receiverName.isNotEmpty ? widget.receiverName : widget.receiverPhone}',
+              '${context.l10n.paying} ${widget.receiverName.isNotEmpty ? widget.receiverName : widget.receiverPhone}',
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 48),
@@ -103,7 +104,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Amount (INR)',
+                  labelText: context.l10n.amount,
                   prefixText: '₹ ',
                   prefixStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -120,9 +121,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         minimumSize: const Size(double.infinity, 56),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
-                        'Confirm Send Via Bluetooth/WiFi',
-                        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                      child: Text(
+                        context.l10n.send,
+                        style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
             ],
