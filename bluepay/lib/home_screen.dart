@@ -519,7 +519,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
     // and POSTs the same JSON to POST /relay on the backend.
     final txnId =
         'TXN${DateTime.now().millisecondsSinceEpoch}${(DateTime.now().microsecond % 9999).toString().padLeft(4, '0')}';
-    final smsBody = '{"txn_id":"$txnId","senderId":"${appState.currentUserName.trim()}","receiverId":"$receiverPhone","amount":$amount}';
+    final smsBody = '{"txn_id":"$txnId","senderId":"${appState.userPhone.trim()}","receiverId":"$receiverPhone","amount":$amount}';
 
     // Deduct locally & record
     appState.sendMoney(amount, receiverPhone);
