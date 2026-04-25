@@ -615,7 +615,7 @@ class _DialpadScreenState extends State<DialpadScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 24),
+            const SizedBox(height: 64),
             // ── Hint banner ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
