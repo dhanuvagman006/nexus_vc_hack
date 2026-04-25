@@ -791,8 +791,6 @@ class WalletScreen extends StatelessWidget {
                 color: colorHeadline,
                 letterSpacing: 1.5,
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
               ),
             ),
             foregroundColor: Colors.white,
@@ -875,28 +873,6 @@ class WalletScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const BalanceCard(),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          _StatCard(
-                            label: 'Total Sent',
-                            value: '₹${totalSent.toStringAsFixed(2)}',
-                            icon: Icons.arrow_upward_rounded,
-                            iconBg: Colors.red.shade50,
-                            iconColor: Colors.redAccent,
-                          ),
-                          const SizedBox(width: 14),
-                          _StatCard(
-                            label: 'Total Received',
-                            value: '₹${totalReceived.toStringAsFixed(2)}',
-                            icon: Icons.arrow_downward_rounded,
-                            iconBg: Colors.green.shade50,
-                            iconColor: Colors.green,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
                       Row(
                         children: [
                           _StatCard(
@@ -959,139 +935,6 @@ class WalletScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Balance card ──────────────────────────────────────────
-                const BalanceCard(),
-                const SizedBox(height: 24),
-
-                // ── Stats row ─────────────────────────────────────────────
-                Row(
-                  children: [
-                    _StatCard(
-                      label: 'Total Sent',
-                      value: '₹${totalSent.toStringAsFixed(2)}',
-                      icon: Icons.arrow_upward_rounded,
-                      iconBg: Colors.red.shade50,
-                      iconColor: Colors.redAccent,
-                    ),
-                    const SizedBox(width: 14),
-                    _StatCard(
-                      label: 'Total Received',
-                      value: '₹${totalReceived.toStringAsFixed(2)}',
-                      icon: Icons.arrow_downward_rounded,
-                      iconBg: Colors.green.shade50,
-                      iconColor: Colors.green,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    _StatCard(
-                      label: 'Transactions',
-                      value: txns.length.toString(),
-                      icon: Icons.receipt_long_outlined,
-                      iconBg: Colors.blue.shade50,
-                      iconColor: Colors.blueAccent,
-                    ),
-                    const SizedBox(width: 14),
-                    _StatCard(
-                      label: 'SMS Pending',
-                      value: pending.toString(),
-                      icon: Icons.hourglass_top_rounded,
-                      iconBg: Colors.orange.shade50,
-                      iconColor: Colors.orange,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                // ── Account Info ──────────────────────────────────────────
-                Text(
-                  context.l10n.accountInfo,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _InfoCard(
-                  children: [
-                    _InfoRow(
-                      icon: Icons.person_outline,
-                      label: context.l10n.name,
-                      value: appState.currentUserName,
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.email_outlined,
-                      label: context.l10n.email,
-                      value: appState.userEmail.isNotEmpty
-                          ? appState.userEmail
-                          : '—',
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.phone_outlined,
-                      label: context.l10n.phone,
-                      value: appState.userPhone.isNotEmpty
-                          ? appState.userPhone
-                          : '—',
-                    ),
-                    const Divider(height: 1),
-                    _InfoRow(
-                      icon: Icons.tag_outlined,
-                      label: context.l10n.endpointId,
-                      value: appState.myEndpointId,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                // ── Quick actions ─────────────────────────────────────────
-                Text(
-                  context.l10n.quickActions,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _QuickAction(
-                      icon: Icons.arrow_upward,
-                      label: context.l10n.sendMoney,
-                      iconBgColor: const Color(0xFFFFF3E0), // Light orange/yellow
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const QRScannerScreen(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    _QuickAction(
-                      icon: Icons.arrow_downward,
-                      label: context.l10n.receiveMoney,
-                      iconBgColor: const Color(0xFFE8F5E9), // Light green
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ReceiveScreen(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _LanguageSwitcherRow(),
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -1641,14 +1484,7 @@ class _WalletSummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black, width: 1.5),
-      ),
-      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1674,6 +1510,25 @@ class _WalletSummaryItem extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LanguageSwitcherRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black, width: 1.5),
+      ),
+      child: Row(
+        children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
