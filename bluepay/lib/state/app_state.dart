@@ -240,7 +240,6 @@ class AppState extends ChangeNotifier {
     debugPrint('[AppState] Balance synced from server: ₹$serverBalance');
   }
 
-  /// Fire-and-forget save (runs async without blocking UI)
   void _persistBalanceAndTransactions() {
     SharedPreferences.getInstance().then((prefs) {
       _saveBalanceAndTransactions(prefs);
